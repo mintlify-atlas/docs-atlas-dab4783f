@@ -1,0 +1,196 @@
+---
+title: "Configure VS Code for Vibe Coding"
+description: "Set up VS Code with the extensions and settings that make AI pair programming smooth — including Local History, GitLens, and WSL integration."
+---
+
+Your editor is where you spend most of your time reviewing and adjusting AI-generated code. A well-configured VS Code reduces friction at every step: auto-save keeps the AI's file reads current, Local History gives you a safety net when the AI overwrites something important, and GitLens surfaces the full change history without leaving the editor. This guide covers the setup prompts and key extensions for every platform.
+
+<Note>
+  Complete [development environment setup](/getting-started/dev-environment) before this step. You need VS Code installed and, on Windows, WSL2 running.
+</Note>
+
+## Choose your IDE
+
+Vibe Coding works with any editor, but three stand out for AI workflows:
+
+<CardGroup cols={3}>
+  <Card title="VS Code" icon="code">
+    Free, most widely supported. Best starting point if you are new to AI tooling.
+  </Card>
+  <Card title="Cursor" icon="cursor-arrow-rays">
+    AI-native fork of VS Code. Built-in AI editing, chat, and composer. Paid after free tier.
+  </Card>
+  <Card title="Windsurf" icon="wind">
+    AI-native IDE with Cascade agent. New users get free credits on sign-up.
+  </Card>
+</CardGroup>
+
+## VS Code setup
+
+Use the prompt for your platform to let an AI configure VS Code for you, or follow the extension list manually.
+
+<AccordionGroup>
+  <Accordion title="Windows + WSL2">
+    ```text
+    You are a patient VS Code configuration assistant. I have already installed WSL2 and Ubuntu. Guide me step by step to configure VS Code for the best WSL development experience.
+
+    Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+    1. Install VS Code on Windows (if not already installed)
+    2. Install the Remote - WSL extension
+    3. Open a project folder through WSL
+    4. Install core extensions: GitLens, Prettier, ESLint, Local History
+    5. Configure the terminal to default to WSL
+    6. Configure auto-save and format-on-save
+    7. Verify the setup works correctly
+
+    Requirements:
+    - Give me the exact operation for each step
+    - If I encounter a problem, help me diagnose and fix it
+    - Ask whether each step succeeded before continuing
+
+    Start with step 1.
+    ```
+  </Accordion>
+
+  <Accordion title="Windows (native, no WSL)">
+    ```text
+    You are a patient VS Code configuration assistant. I use Windows without WSL. Guide me step by step to configure VS Code.
+
+    Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+    1. Install VS Code (if not already installed)
+    2. Install core extensions: GitLens, Prettier, ESLint, Local History
+    3. Configure the terminal to use PowerShell or Git Bash
+    4. Configure auto-save and format-on-save
+    5. Configure Git integration
+    6. Verify the setup works correctly
+
+    Requirements:
+    - Give me the exact operation for each step
+    - If I encounter a problem, help me diagnose and fix it
+    - Ask whether each step succeeded before continuing
+
+    Start with step 1.
+    ```
+  </Accordion>
+
+  <Accordion title="macOS">
+    ```text
+    You are a patient VS Code configuration assistant. I use macOS. Guide me step by step to configure VS Code.
+
+    Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+    1. Install VS Code via Homebrew or the official website
+    2. Set up the `code` command-line tool
+    3. Install core extensions: GitLens, Prettier, ESLint, Local History
+    4. Configure auto-save and format-on-save
+    5. Verify the setup works correctly
+
+    Requirements:
+    - Give me the exact operation for each step
+    - If I encounter a problem, help me diagnose and fix it
+    - Ask whether each step succeeded before continuing
+
+    Start with step 1.
+    ```
+  </Accordion>
+
+  <Accordion title="Linux (Ubuntu / Debian)">
+    ```text
+    You are a patient VS Code configuration assistant. I use Linux (Ubuntu/Debian). Guide me step by step to configure VS Code.
+
+    Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+    1. Install VS Code via apt or snap
+    2. Install core extensions: GitLens, Prettier, ESLint, Local History
+    3. Configure auto-save and format-on-save
+    4. Configure terminal integration
+    5. Verify the setup works correctly
+
+    Requirements:
+    - Give me the exact operation for each step
+    - If I encounter a problem, help me diagnose and fix it
+    - Ask whether each step succeeded before continuing
+
+    Start with step 1.
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Recommended extensions
+
+These four extensions are referenced in every setup prompt above. Install them first.
+
+| Extension | Why it matters for Vibe Coding |
+|:----------|:-------------------------------|
+| **Local History** | Saves a local snapshot every time you save a file. Essential safety net when the AI overwrites code you wanted to keep. |
+| **GitLens** | Inline blame, branch history, and commit comparisons — lets you review everything the AI changed in one place. |
+| **Prettier** | Consistent code formatting on save. Keeps AI-generated code readable without manual cleanup. |
+| **ESLint** | Highlights syntax and style errors inline. Catches issues before you run the code. |
+
+<Tip>
+  Install **Local History** before you start any AI-assisted session. AI tools can make sweeping file changes without explicit confirmation. Local History lets you recover any version saved in the last few days with two clicks.
+</Tip>
+
+## Cursor setup
+
+Cursor is a VS Code fork with AI editing built in at the editor level — no extension required.
+
+```text
+You are a patient Cursor IDE setup assistant. I want to use Cursor as my primary development tool. Guide me step by step through installation and configuration.
+
+My operating system: [Windows / macOS / Linux]
+
+Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+1. Download and install Cursor (https://cursor.com)
+2. Initial launch configuration (sign in, choose theme)
+3. Import VS Code settings and extensions (if I used VS Code before)
+4. Configure AI features (API key or subscription)
+5. Learn core shortcuts:
+   - Cmd/Ctrl + K: AI inline edit
+   - Cmd/Ctrl + L: AI chat panel
+   - Cmd/Ctrl + I: Composer mode (multi-file edit)
+6. Configure auto-save
+7. Verify AI features work
+
+Requirements:
+- Give me the exact operation for each step
+- Explain what makes Cursor different from VS Code
+- If I encounter a problem, help me diagnose and fix it
+- Ask whether each step succeeded before continuing
+
+Start by asking which operating system I use.
+```
+
+## Windsurf setup
+
+Windsurf is another AI-native IDE. New users receive free credits — no credit card required to start.
+
+```text
+You are a patient Windsurf IDE setup assistant. I want to use Windsurf as my development tool. Guide me step by step through installation and configuration.
+
+My operating system: [Windows / macOS / Linux]
+
+Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+1. Download and install Windsurf (https://windsurf.com)
+2. Register an account and sign in (new users get free credits)
+3. Initial launch configuration
+4. Learn about Windsurf's AI features (Cascade agent)
+5. Configure the base development environment
+6. Verify AI features work
+
+Requirements:
+- Give me the exact operation for each step
+- Explain Windsurf's unique features
+- If I encounter a problem, help me diagnose and fix it
+- Ask whether each step succeeded before continuing
+
+Start by asking which operating system I use.
+```
+
+## Next step
+
+Your IDE is ready. Continue to [configure OpenCode CLI](/getting-started/opencode-cli) to add a free AI terminal tool to your workflow.

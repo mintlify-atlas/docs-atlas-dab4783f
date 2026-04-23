@@ -1,0 +1,166 @@
+---
+title: "Canvas whiteboard-driven AI development"
+description: "Use a shared whiteboard as the single source of truth for code architecture, letting AI read structure visually instead of through text."
+icon: "chalkboard"
+---
+
+Canvas whiteboard-driven development treats the architecture diagram as the primary artifact of your project — not the code. Code becomes a serialized form of what the whiteboard already describes. Because AI can parse structured graph data (JSON) far more reliably than free-form text descriptions, the whiteboard closes the gap between what you intend and what AI builds.
+
+## The collaboration model
+
+```
+Code ⇄ Canvas whiteboard ⇄ AI ⇄ Human
+              ↓
+      Single source of truth
+```
+
+In this model, both you and the AI edit the same whiteboard. You handle high-level design by dragging and connecting modules; AI reads the connections and generates the corresponding code. Changes flow in both directions: code updates are scanned back into the whiteboard, and whiteboard edits drive code generation or refactoring.
+
+## Three problems it solves
+
+<CardGroup cols={1}>
+  <Card title="AI can't understand project structure" icon="robot">
+    **Before:** You repeatedly explain what each file does.
+
+    **After:** AI reads the whiteboard JSON directly and understands the full architecture immediately — no explanation needed.
+  </Card>
+  <Card title="Humans can't remember complex dependencies" icon="brain">
+    **Before:** You change one file and forget that another depends on it.
+
+    **After:** Connection lines in the whiteboard make every dependency explicit. The impact of any change is visible at a glance.
+  </Card>
+  <Card title="Team collaboration is verbal" icon="comments">
+    **Before:** "How does the data flow?" — "Let me dig through the code..."
+
+    **After:** Point at the whiteboard. A new team member understands the full architecture in five minutes.
+  </Card>
+</CardGroup>
+
+## How it works in practice
+
+<Steps>
+  <Step title="Write code — whiteboard updates automatically">
+    When you add a new file, the AI scans it and updates the whiteboard with the new node and its connections.
+
+    ```python
+    class PaymentService:
+        def process(self):
+            db.save()       # AI detects: database write
+            stripe.charge() # AI detects: external API call
+    ```
+
+    The whiteboard gains:
+
+    ```
+    [PaymentService] ──writes──> [Database]
+          │
+          └──calls──> [Stripe API]
+    ```
+  </Step>
+
+  <Step title="Edit the whiteboard — AI generates code">
+    Drag `UserService` and connect it to `PaymentService`. AI reads the new connection and generates the corresponding import and call.
+
+    ```python
+    # user_service.py
+    from payment_service import PaymentService
+
+    def create_order(user):
+        payment = PaymentService()
+        payment.process(user.card)  # added from whiteboard connection
+    ```
+  </Step>
+
+  <Step title="Use the whiteboard as your development hub">
+    | Task | Traditional approach | Canvas approach |
+    |------|---------------------|-----------------|
+    | Request a refactor | Describe it in text | Drag a new node; AI splits the code |
+    | Code review | Read line by line | Check connection logic in the diagram |
+    | Respond to requirement changes | Search and edit across files | Delete a line; AI removes all related calls |
+  </Step>
+</Steps>
+
+## Key innovations
+
+### Diagram as first-class citizen
+
+Traditional workflow: Code → documentation (goes stale) → architecture diagram (staler still).
+
+Canvas workflow: **Whiteboard = single source of truth.** Code is just its serialized form.
+
+```
+Code change ──auto-scan──> Update whiteboard
+Whiteboard edit ──AI parse──> Generate / modify code
+```
+
+### A shared workspace for humans and AI
+
+- **You** excel at high-level design: dragging modules, defining connections.
+- **AI** excels at detail implementation: generating code from those connections.
+- **Both** work on the same artifact instead of passing text back and forth.
+
+## Usage scenarios
+
+<AccordionGroup>
+  <Accordion title="Assigning work to AI">
+    Instead of writing a long text description, draw three nodes in the whiteboard — `RegisterAPI → Database / EmailService / Logger` — then tell AI: "Implement this diagram." AI generates all files and call relationships correctly in one pass.
+  </Accordion>
+
+  <Accordion title="Code review">
+    Open the whiteboard and look for structural anomalies: "Why is the frontend connected directly to the database?" Drag the nodes to the correct topology, and AI refactors the code to match.
+  </Accordion>
+
+  <Accordion title="Inheriting someone else's project">
+    Run the auto-generation tool — a whiteboard of the existing architecture appears in one minute. Click into any module to see details, then draw your intended changes and let AI locate the affected code.
+  </Accordion>
+</AccordionGroup>
+
+## Getting started in five minutes
+
+**Toolchain:**
+- **Whiteboard:** Obsidian Canvas (free, open source)
+- **Auto-generation:** prompt-driven (see the skills reference)
+- **AI collaboration:** any model that can read Canvas JSON (Claude, GPT-4, etc.)
+
+```bash
+# 1. Run auto-analysis on your project
+#    [Use a prompt to ask AI to generate an architecture whiteboard]
+
+# 2. Open the generated .canvas file in Obsidian
+
+# 3. Try dragging a module or adding a connection
+
+# 4. Send the updated whiteboard to AI:
+#    "Refactor the code to match this new architecture"
+```
+
+<Tip>
+  The whiteboard file is plain JSON. You can read it, version it in git, and share it with your team just like any other file.
+</Tip>
+
+<Note>
+  Canvas whiteboard-driven development works best when combined with a closed-loop evaluation mechanism. See [Harness Engineering](/methods/harness-engineering) for how to make AI-generated code reliably verifiable.
+</Note>
+
+## Why this approach matters
+
+Graphical language is how the human brain naturally processes structure. You can read a metro map instantly; an equivalent text description of transfers would take minutes to parse. Canvas whiteboard-driven development applies the same principle to software architecture: the diagram communicates what no text description can match in speed or clarity.
+
+> "The best documentation is not Markdown — it is an architecture diagram that can directly drive AI to work."
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Canvas dev skill" icon="wand-magic-sparkles" href="/skills/canvas-dev">
+    The skill file for whiteboard-driven development workflows.
+  </Card>
+  <Card title="Harness Engineering" icon="shield-check" href="/methods/harness-engineering">
+    Provide a closed-loop verification layer for whiteboard-generated code.
+  </Card>
+  <Card title="AI Swarm" icon="users" href="/methods/ai-swarm">
+    Combine whiteboard coordination with multi-agent execution.
+  </Card>
+  <Card title="Glue coding" icon="link" href="/principles/glue-coding">
+    Reuse proven components that your whiteboard can wire together.
+  </Card>
+</CardGroup>

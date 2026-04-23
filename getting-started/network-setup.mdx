@@ -1,0 +1,127 @@
+---
+title: "Configure your network for AI coding tools"
+description: "Learn why network configuration is a prerequisite for Vibe Coding, how to set up a proxy with FlClash, and how to troubleshoot common connectivity issues."
+---
+
+Before you can use AI coding tools such as Claude, GitHub Copilot, or the Gemini API, your machine must be able to reach the services they depend on. In many regions, direct access to Google, GitHub, and Anthropic APIs is blocked or severely throttled. This guide walks you through setting up a reliable proxy with FlClash so that every AI tool on your system works without interruption.
+
+## Why network configuration matters
+
+AI coding tools make continuous requests to external APIs. A dropped connection mid-session corrupts context, causes tool errors, and wastes tokens. Configuring a stable proxy at the system level — rather than on a per-application basis — ensures that your terminal, IDE, and browser all share the same reliable route to the open internet.
+
+<CardGroup cols={2}>
+  <Card title="FlClash" icon="shield" href="https://github.com/chen08209/FlClash/releases">
+    The recommended cross-platform proxy client. Supports TUN mode for true global traffic routing.
+  </Card>
+  <Card title="Verify connectivity" icon="circle-check" href="#verify-your-connection">
+    Two curl commands to confirm that Google and GitHub are reachable before you proceed.
+  </Card>
+</CardGroup>
+
+## Option A: AI-guided setup (recommended)
+
+If you are new to proxy configuration, paste the prompt below into any AI chat (ChatGPT, Claude, or Gemini web) and follow its step-by-step guidance. The AI will ask which operating system you use and then walk you through every click.
+
+```text
+You are a patient network configuration assistant. I need to configure a network proxy so that I can access GitHub, Google, Claude, and other services.
+
+My situation:
+- Operating system: [tell me whether you use Windows / macOS / Linux / Android]
+- I already have a proxy subscription link
+
+Please guide me through setting up the FlClash client:
+1. How to download and install FlClash (GitHub: https://github.com/chen08209/FlClash/releases)
+2. How to import my subscription link
+3. How to enable TUN mode (virtual NIC) for global routing
+4. How to enable system proxy
+5. How to verify the configuration succeeded
+
+Requirements:
+- Explain each step in detail, describing button locations clearly
+- If I encounter a problem, help me diagnose the cause and offer a fix
+- After each step, ask whether I succeeded before moving on
+
+Start now by asking me which operating system I use.
+```
+
+## Option B: Manual setup
+
+<Steps>
+  <Step title="Subscribe to a proxy service">
+    Visit a proxy provider and register an account. After payment, locate your **subscription link** in the user dashboard and copy it.
+
+    <Tip>Plans typically start at around ¥6/month. Keep the subscription link — you will paste it into FlClash in the next step.</Tip>
+  </Step>
+
+  <Step title="Download FlClash">
+    Go to the [FlClash releases page](https://github.com/chen08209/FlClash/releases) and download the file that matches your operating system:
+
+    | Platform | File |
+    |:---------|:-----|
+    | Windows | `FlClash-x.x.x-windows-setup.exe` |
+    | macOS | `FlClash-x.x.x-macos.dmg` |
+    | Linux | `FlClash-x.x.x-linux-amd64.AppImage` |
+    | Android | `FlClash-x.x.x-android.apk` |
+  </Step>
+
+  <Step title="Import your subscription">
+    1. Open FlClash.
+    2. Click **Configuration** → **Add**.
+    3. Choose **URL import**.
+    4. Paste the subscription link from step 1.
+    5. Click **Confirm** and wait for the nodes to load.
+  </Step>
+
+  <Step title="Enable proxy mode">
+    Turn on all three settings in the FlClash dashboard:
+
+    | Setting | Action |
+    |:--------|:-------|
+    | **Virtual NIC (TUN)** | Enable — routes all traffic globally |
+    | **System proxy** | Enable — covers browser and system apps |
+    | **Proxy mode** | Set to **Global** |
+
+    The FlClash home screen shows **Connected** when the proxy is active.
+  </Step>
+
+  <Step title="Verify your connection">
+    Run the following commands in your terminal to confirm both services are reachable:
+
+    ```bash
+    # Test Google connectivity
+    curl -I https://www.google.com
+
+    # Test GitHub connectivity
+    curl -I https://github.com
+    ```
+
+    A response of `HTTP/2 200` confirms the proxy is working correctly.
+  </Step>
+</Steps>
+
+## Common issues
+
+<AccordionGroup>
+  <Accordion title="Nodes won't connect">
+    Try switching to a different node in the FlClash node list. If multiple nodes fail, your subscription may have expired — check the provider dashboard and renew if needed.
+  </Accordion>
+
+  <Accordion title="Some applications still bypass the proxy">
+    Make sure **TUN mode (virtual NIC)** is enabled. System proxy mode only covers applications that respect the system proxy settings (mainly browsers). TUN mode routes all traffic at the network interface level, so your terminal and IDE are covered automatically.
+  </Accordion>
+
+  <Accordion title="Terminal does not go through the proxy">
+    With TUN mode on, the terminal should be covered automatically. If you are not using TUN mode, set environment variables manually:
+
+    ```bash
+    export https_proxy=http://127.0.0.1:7890
+    export http_proxy=http://127.0.0.1:7890
+    ```
+
+    Add these lines to `~/.bashrc` or `~/.zshrc` to make them permanent.
+  </Accordion>
+</AccordionGroup>
+
+## Next step
+
+Once `curl -I https://github.com` returns `HTTP/2 200`, your network is ready. Continue to [set up your development environment](/getting-started/dev-environment).

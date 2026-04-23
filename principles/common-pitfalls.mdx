@@ -1,0 +1,200 @@
+---
+title: "Common pitfalls in AI-assisted development"
+description: "Avoid common AI coding mistakes: hard constraints never to violate, hard-learned lessons from real projects, and environment and tooling traps."
+---
+
+AI-assisted development introduces a new class of failure modes on top of the ones that already existed. Some are familiar — misconfigured environments, scope creep, untested code — but they compound quickly when an AI is generating code faster than you can review it. This page documents the most common traps, organized so you can scan for the one you are currently stuck on.
+
+<Note>
+  The lessons on this page come from two sources: systematic constraint analysis (what the AI must never do) and hard-won field experience (what actually broke in real projects). Both matter.
+</Note>
+
+## Hard constraints: what you must never allow
+
+These are non-negotiable rules for AI-assisted coding. If the AI violates any of them, stop and correct before continuing — the longer you let these slide, the harder recovery becomes.
+
+<AccordionGroup>
+  <Accordion title="Never apply patch fixes that ignore the overall design">
+    A local fix that works in isolation but violates the architectural pattern will cause cascading failures. Always ask: does this fix fit the existing design, or does it paper over a design problem that needs to be addressed directly?
+  </Accordion>
+  <Accordion title="Never introduce complex intermediate state">
+    Intermediate state that serves as a communication channel between components lowers readability and creates circular dependencies. Keep state minimal. All UI state must be derived from core data, not from transient intermediate variables.
+  </Accordion>
+  <Accordion title="Never write excessive defensive code">
+    Defensive code that covers every conceivable failure mode obscures the main logic and increases maintenance cost. Use clear data constraints and boundary design to prevent problems at the source.
+  </Accordion>
+  <Accordion title="Never sacrifice architecture for feature completion">
+    Shipping a feature that works but degrades the architecture creates technical debt that compounds. Agree on the structural constraints before writing any code.
+  </Accordion>
+  <Accordion title="Never keep unused variables or functions">
+    Dead code misleads anyone who reads it later — including the AI in your next session. Every variable and function in the codebase must participate in execution.
+  </Accordion>
+  <Accordion title="Never mix side effects into core business logic">
+    IO, network calls, database writes, and logging must be separated from pure business logic. Business logic that depends on side effect timing is untestable and fragile.
+  </Accordion>
+  <Accordion title="Never swallow exceptions or use empty catch blocks">
+    Silent failure is the hardest category of bug to diagnose. Every exception must be handled explicitly or allowed to propagate. An empty catch is always wrong.
+  </Accordion>
+  <Accordion title="Never implement before requirements are confirmed">
+    If the requirement, boundary condition, or expected input/output is unclear, stop and confirm before writing code. The AI will invent plausible-sounding behavior for ambiguous specs; those inventions become bugs.
+  </Accordion>
+  <Accordion title="Never guess at interface behavior">
+    Always read the documentation, type definitions, or source code before calling an interface. Guessing at API behavior is the primary source of subtle, hard-to-reproduce bugs.
+  </Accordion>
+  <Accordion title="Never skip validation and testing">
+    Code that has not been tested does not exist in a reliable state. Every task must include a verification step — a test case, a manual run, or a measurable metric.
+  </Accordion>
+</AccordionGroup>
+
+## Glue Coding specific constraints
+
+When working with the [Glue Coding](/principles/glue-coding) methodology, additional constraints apply to how you use libraries.
+
+<AccordionGroup>
+  <Accordion title="Never copy library code into your project and modify it">
+    If you copy a dependency into your project and alter it, you lose all future upstream updates and invalidate the community guarantees that made the library worth using.
+  </Accordion>
+  <Accordion title="Never implement what a library already provides">
+    If a dependency handles authentication, data serialization, or connection pooling — use the dependency's implementation. Writing your own version introduces a new code surface to maintain and test.
+  </Accordion>
+  <Accordion title="Never use mocks, stubs, or demo code in production">
+    Placeholder implementations that pass tests in development but behave differently in production are a category of technical debt that is almost impossible to detect from code review alone.
+  </Accordion>
+  <Accordion title="Never let an unused import exist">
+    An import that is not called in production is a false signal to anyone reading the code. It suggests integration that does not actually happen.
+  </Accordion>
+</AccordionGroup>
+
+## AI conversation pitfalls
+
+<AccordionGroup>
+  <Accordion title="AI-generated code that won't run">
+    **Cause**: insufficient context. **Fix**: provide the complete error message, the runtime environment (OS, language version, dependency versions), and the relevant file content. Never report just "it doesn't work."
+  </Accordion>
+  <Accordion title="AI cycling on the same fix repeatedly">
+    **Cause**: the AI is stuck in a local solution space. **Fix**: open a new conversation, describe the problem from scratch using the [Goal–Current–Gap–Standard framework](/principles/problem-solving), and explicitly tell the AI which approaches you have already tried.
+  </Accordion>
+  <Accordion title="AI hallucinating APIs that don't exist">
+    **Cause**: the model's training data is outdated or the library is obscure. **Fix**: paste the official documentation directly into the prompt. Do not ask the AI to recall library APIs from memory for anything version-sensitive.
+  </Accordion>
+  <Accordion title="Code getting progressively more chaotic with each session">
+    **Cause**: no upfront plan. **Fix**: ask the AI to produce a written design document first. Review and approve the design before allowing any code to be written.
+  </Accordion>
+  <Accordion title="AI modifying files you did not intend to change">
+    **Cause**: unclear scope. **Fix**: always include explicit scope constraints: "Only modify `src/auth/middleware.py`. Do not change any other file."
+  </Accordion>
+  <Accordion title="AI ignoring the system prompt">
+    **Cause**: system prompt too long or contradictory. **Fix**: trim to the most critical rules and place them at the top. Contradictions in a system prompt cause the model to default to its base behavior.
+  </Accordion>
+  <Accordion title="Multi-turn quality degradation">
+    **Cause**: accumulated context pollution from earlier exchanges that contained wrong assumptions or failed attempts. **Fix**: start a new session periodically. Treat each new significant task as a new conversation.
+  </Accordion>
+</AccordionGroup>
+
+## Environment and tooling pitfalls
+
+<AccordionGroup>
+  <Accordion title="Python virtual environment problems">
+    Always use a project-level virtual environment. Global Python installations cause dependency conflicts that are nearly impossible to debug.
+
+    ```bash
+    # Create and activate
+    python -m venv .venv
+    source .venv/bin/activate   # macOS/Linux
+    .venv\Scripts\activate      # Windows
+
+    # Reset a broken environment
+    rm -rf .venv
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    ```
+  </Accordion>
+  <Accordion title="Node.js version conflicts">
+    Use `nvm` to manage Node versions per project. The `package-lock.json` encodes the exact environment — use `npm ci` instead of `npm install` in shared environments.
+
+    ```bash
+    nvm install 18
+    nvm use 18
+    npm ci
+    ```
+  </Accordion>
+  <Accordion title="Environment variables not loading">
+    The `.env` file does not load automatically. Use `python-dotenv` in Python or `dotenv` in Node. Always create an `.env.example` that documents required variables without containing real values.
+  </Accordion>
+  <Accordion title="Port already in use">
+    Previous processes left running in the background. Find and kill them before restarting:
+
+    ```bash
+    lsof -i :8000          # macOS/Linux
+    netstat -ano | findstr :8000   # Windows
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Architecture pitfalls
+
+<AccordionGroup>
+  <Accordion title="Code getting harder to modify over time">
+    **Cause**: no module boundaries. Every component depends on every other component. **Fix**: establish clear interfaces between modules before writing any implementation. See [project architecture](/principles/project-architecture) for standard boundary patterns.
+  </Accordion>
+  <Accordion title="Changing one thing breaks something unrelated">
+    **Cause**: coupling is too tight. **Fix**: each module must have a defined interface and a single responsibility. Changes should propagate only through explicit interfaces, not through shared state.
+  </Accordion>
+  <Accordion title="Not knowing where new code belongs">
+    **Cause**: no consistent directory structure. **Fix**: adopt a standard project template before writing the first line. See [project architecture](/principles/project-architecture) for ready-to-use templates.
+  </Accordion>
+  <Accordion title="Configuration scattered across the codebase">
+    **Cause**: hardcoded constants. **Fix**: centralize all configuration in environment variables and a config module. Nothing environment-specific belongs in source code.
+  </Accordion>
+</AccordionGroup>
+
+## The blood and sweat lesson
+
+One lesson that comes up repeatedly in real projects:
+
+> "Ten minutes of development, seven minutes finding information. Before you start development, you must — without exception — gather all the resources you need and align fully with AI through discussion. Always ask: What is this? Why this approach? How is it done? Is this the best available solution? Tool: Perplexity."
+
+The failure mode this lesson addresses is **starting to build before you know what already exists**. Discovering a better open-source solution after two days of custom implementation is one of the most expensive mistakes in AI-assisted development. Research first, build second.
+
+<Tip>
+  Spend at least as much time researching and aligning before a task as you spend executing it. The ratio should be roughly equal. Rushing into implementation is where most hours are lost.
+</Tip>
+
+## Emergency debugging checklist
+
+When nothing is working and you do not know why:
+
+1. Read the full error message — paste it completely into AI, not a summary
+2. Find the minimal reproduction — the smallest code change that triggers the problem
+3. Use binary search — comment out half the code and determine which half contains the bug
+4. Change the environment — try a different terminal, browser, or device
+5. Restart everything — server, editor, terminal session
+6. Rebuild from scratch — if the environment is corrupt, delete and recreate it
+
+```text
+Prompt template for AI debugging help:
+
+I have a problem I cannot resolve after multiple attempts.
+
+Error message:
+[paste complete error]
+
+My environment:
+- OS:
+- Python/Node version:
+- Relevant dependency versions:
+
+Approaches I have already tried:
+1. [approach]
+2. [approach]
+
+Please analyze the possible causes and suggest solutions.
+```
+
+## Related pages
+
+- [Problem solving frameworks](/principles/problem-solving) — structure your approach before reaching for AI
+- [Prompt engineering principles](/principles/prompt-engineering) — hard constraints belong in your system prompt
+- [Project architecture](/principles/project-architecture) — architectural patterns that prevent structural pitfalls
+- [Playbook: debugging](/playbook/debugging) — systematic debugging workflow

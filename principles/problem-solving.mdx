@@ -1,0 +1,104 @@
+---
+title: "Problem solving frameworks for AI coding"
+description: "Master the Goal-Current-Gap-Standard and Goal-Constraint-Object-Path frameworks to frame problems clearly for AI-assisted development."
+---
+
+Problem solving is the one skill that underlies every other capability in software development. Whether you are debugging, designing, or delegating tasks to an AI, the quality of your output depends entirely on how well you define the problem before you attempt a solution. Vague problems produce vague code; clear problems produce working software.
+
+## The core definition
+
+At its heart, problem solving is the ability to move from a **current state** to a **target state**. Every bug fix, every feature, every refactor follows the same shape:
+
+> Problem = Target State − Current State
+
+If you cannot articulate that gap, neither you nor the AI can solve it reliably.
+
+## Framework 1: Goal–Current–Gap–Standard
+
+This framework forces you to fully define a problem before writing a single line of code or composing a single prompt.
+
+<Steps>
+  <Step title="Goal — what result do you need?">
+    State the desired outcome in concrete terms. Avoid "make it better." Instead: "the API must return a response within 200ms under 1,000 concurrent requests."
+  </Step>
+  <Step title="Current state — what exists right now?">
+    Describe exactly what is happening, including error messages, logs, and environment details. This is the raw material the AI works from.
+  </Step>
+  <Step title="Gap — what is missing between now and the goal?">
+    Identify the specific delta. Is it missing logic? A wrong assumption? An unhandled edge case? Naming the gap precisely prevents the AI from solving the wrong problem.
+  </Step>
+  <Step title="Standard — how will you know it is solved?">
+    Define acceptance criteria up front. A test case, a measurable metric, or a specific behavior that must be reproducible. Without this, "done" is undefined.
+  </Step>
+</Steps>
+
+<Tip>
+  When you paste this four-part structure into your AI prompt, the model has a complete picture of what success looks like. You stop getting plausible-sounding guesses and start getting targeted solutions.
+</Tip>
+
+## Framework 2: Goal–Constraint–Object–Path
+
+Once the problem is defined, this framework structures your **solution design**. It is the minimal model for constructing a viable approach.
+
+<CardGroup cols={2}>
+  <Card title="Goal" icon="bullseye">
+    **How far do you need to go?** Decide whether "good enough" or "optimal" is the target. Short-term proof-of-concept and long-term production system require different paths.
+  </Card>
+  <Card title="Constraint" icon="shield">
+    **What are the non-negotiable boundaries?** Time, compute budget, regulatory rules, team capability, existing tech stack. Constraints that are ignored early become blockers later.
+  </Card>
+  <Card title="Object" icon="box">
+    **What exactly are you operating on?** The object might be a data record, a service, a file, a user workflow, or an external API. Identifying the object keeps the solution focused.
+  </Card>
+  <Card title="Path" icon="route">
+    **What sequence of steps gets you there?** Decompose, prioritize, iterate, and correct. The path is not fixed — it updates as you receive feedback.
+  </Card>
+</CardGroup>
+
+## How to frame problems for AI
+
+Giving an AI a vague instruction is the single largest source of wasted tokens and broken code. These principles apply whether you are using Claude Code, Cursor, or any other AI coding tool.
+
+<AccordionGroup>
+  <Accordion title="Lead with the goal, not the implementation">
+    Tell the AI what you want to achieve, not how you think it should be built. The model often knows a better path than the one you would prescribe.
+
+    **Weak**: "Add an if-statement to check the user role before the API call."
+
+    **Strong**: "Only allow users with the `admin` role to call `/api/delete`. Return 403 for all others."
+  </Accordion>
+  <Accordion title="Provide concrete examples of inputs and outputs">
+    Ambiguity collapses immediately when you show the AI a specific input and the exact output you expect. Include edge cases in the examples.
+  </Accordion>
+  <Accordion title="State what you have already tried">
+    If you have already attempted three approaches, say so. This prevents the AI from cycling through the same failed solutions. It also signals the shape of the problem space.
+  </Accordion>
+  <Accordion title="Specify the acceptance criterion">
+    Tell the AI what a passing test looks like. This anchors its output to something verifiable rather than something merely plausible.
+  </Accordion>
+  <Accordion title="Constrain the scope explicitly">
+    Say "only modify `src/auth/middleware.py` — do not change any other files." Unconstrained AI edits cause scope creep and unexpected breakage.
+  </Accordion>
+</AccordionGroup>
+
+## The compressed formula
+
+The complete problem-solving cycle collapses to three steps:
+
+```text
+Problem solving = Define the problem × Construct the solution × Verify the result
+
+Define:    Goal, Current state, Gap
+Construct: Object, Constraint, Path
+Verify:    Feedback, Iteration, Convergence
+```
+
+<Note>
+  All other developer capabilities — learning, decision-making, communication, architecture — are specializations of this same loop applied to different domains.
+</Note>
+
+## Related pages
+
+- [Prompt engineering principles](/principles/prompt-engineering) — apply these frameworks in your prompts
+- [Common pitfalls](/principles/common-pitfalls) — mistakes that arise from skipping the definition step
+- [Playbook: workflow](/playbook/workflow) — end-to-end development workflow using these frameworks

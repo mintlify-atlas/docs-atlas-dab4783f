@@ -1,0 +1,390 @@
+---
+title: "Universal project architecture for AI projects"
+description: "Standard directory structures, module boundaries, and data-first design patterns for AI-assisted projects — from single scripts to monorepos."
+---
+
+Project architecture is the decision you make before writing any code: how will the code be organized, which modules have which responsibilities, and how will data flow through the system. Getting this wrong early is expensive; getting it right makes every subsequent AI-assisted session faster and more reliable because the model always knows where code belongs.
+
+> Project architecture = deciding "where code lives, how modules connect, and who owns what" before any business logic is written.
+
+## Core design principles
+
+Every template on this page follows the same five principles. These are not optional — they are what make AI-assisted development sustainable at scale.
+
+<CardGroup cols={2}>
+  <Card title="Separation of concerns" icon="layers">
+    Each directory and module has one job. API code does not contain business logic. Business logic does not contain database calls. The layer structure makes the separation explicit.
+
+    ```text
+    API → Service → Repository → Database
+    ```
+  </Card>
+  <Card title="Interface first, implementation later" icon="plug">
+    Define the interface (inputs, outputs, error cases) before writing any implementation. AI-generated code that targets a clear interface is dramatically more reliable than code written into ambiguous context.
+  </Card>
+  <Card title="Data and functions first" icon="database">
+    Identify what data structures the system needs and what transformations it applies to them before deciding on modules or classes. Data flow defines the architecture; architecture does not define the data flow.
+  </Card>
+  <Card title="Configurability" icon="settings">
+    Configuration lives outside code. The priority order is: environment variable → config file → default value. Nothing environment-specific is hardcoded.
+  </Card>
+  <Card title="Testability" icon="flask">
+    Every module can be tested independently. External dependencies can be replaced. Functions have clear inputs and outputs with no hidden state.
+  </Card>
+  <Card title="Git-friendliness" icon="git-branch">
+    Data, logs, and model files are excluded from version control. Only source code and configuration examples are committed.
+  </Card>
+</CardGroup>
+
+## Template 1: Python web / API project
+
+Use this for Flask or FastAPI applications, REST API services, and web backends.
+
+```text
+project-name/
+├── README.md
+├── LICENSE
+├── requirements.txt          # pinned dependency versions
+├── pyproject.toml            # modern Python project config (recommended)
+├── .gitignore
+├── .env                      # environment variables (never commit)
+├── .env.example              # documents required variables (commit this)
+├── CLAUDE.md                 # persistent context for Claude Code
+├── AGENTS.md                 # persistent context for Codex
+│
+├── docs/
+│   ├── api.md
+│   ├── development.md
+│   └── architecture.md
+│
+├── scripts/
+│   ├── deploy.sh
+│   ├── backup.sh
+│   └── init_db.sh
+│
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py           # pytest configuration and fixtures
+│   ├── unit/
+│   └── integration/
+│
+└── src/
+    ├── __init__.py
+    ├── main.py               # entry point
+    ├── app.py                # Flask/FastAPI application instance
+    ├── config.py             # configuration management
+    │
+    ├── core/                 # pure business logic (no IO)
+    │   ├── models/           # domain data models
+    │   ├── services/         # business operations
+    │   └── utils/            # pure utility functions
+    │
+    ├── api/                  # HTTP interface layer
+    │   ├── v1/
+    │   └── dependencies.py   # dependency injection
+    │
+    ├── data/                 # data access layer
+    │   ├── repository/       # database queries
+    │   └── migrations/
+    │
+    └── external/             # third-party integrations
+        ├── clients/          # API clients
+        └── integrations/
+```
+
+<Note>
+  The `core/` directory must contain no IO, no network calls, and no database access. All side effects belong in `data/` or `external/`. This separation is what makes the business logic testable without a running database.
+</Note>
+
+## Template 2: Data science / quantitative project
+
+Use this for quantitative trading systems, machine learning pipelines, and data analysis projects.
+
+```text
+project-name/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── .env
+├── .env.example
+├── CLAUDE.md
+├── AGENTS.md
+│
+├── notebooks/                # Jupyter exploration (not production code)
+│   ├── 01_data_exploration.ipynb
+│   ├── 02_feature_engineering.ipynb
+│   └── 03_model_training.ipynb
+│
+├── scripts/
+│   ├── train_model.py
+│   ├── backtest.py
+│   ├── collect_data.py
+│   └── deploy_model.py
+│
+├── configs/                  # environment-specific configuration
+│   ├── model.yaml
+│   ├── database.yaml
+│   └── trading.yaml
+│
+├── src/
+│   ├── data/
+│   │   ├── collectors/       # data ingestion from external sources
+│   │   ├── processors/       # data cleaning and normalization
+│   │   ├── features/         # feature engineering
+│   │   └── loaders.py
+│   │
+│   ├── models/
+│   │   ├── strategies/       # trading or prediction strategies
+│   │   ├── backtest/         # backtesting engine
+│   │   └── risk/             # risk management
+│   │
+│   ├── utils/
+│   │   ├── logging.py
+│   │   ├── database.py
+│   │   └── api_client.py
+│   │
+│   └── core/
+│       ├── config.py
+│       ├── signals.py        # signal generation
+│       └── portfolio.py
+│
+├── data/                     # gitignored: raw, processed, cached data
+│   ├── raw/
+│   ├── processed/
+│   ├── external/
+│   └── cache/
+│
+├── models/                   # gitignored: model checkpoints and exports
+│   ├── checkpoints/
+│   └── exports/
+│
+└── logs/                     # gitignored
+```
+
+A concrete data flow example for a crypto analysis system:
+
+```text
+WebSocket → data cleaning → indicator calculation → AI scoring → SQLite → API → frontend
+```
+
+## Template 3: Monorepo / microservices
+
+Use this for multi-service systems, large team projects, or when different services have different deployment requirements.
+
+```text
+project-monorepo/
+├── README.md
+├── .gitignore
+├── .gitmodules               # Git submodules for external dependencies
+├── docker-compose.yml        # orchestrate all services locally
+├── CLAUDE.md
+├── AGENTS.md
+│
+├── docs/
+│   ├── architecture.md
+│   └── deployment.md
+│
+├── scripts/
+│   ├── build_all.sh
+│   ├── test_all.sh
+│   └── deploy.sh
+│
+├── services/                 # one subdirectory per independent service
+│   ├── user-service/
+│   │   ├── Dockerfile
+│   │   ├── requirements.txt
+│   │   ├── src/
+│   │   └── tests/
+│   ├── trading-service/
+│   │   ├── Dockerfile
+│   │   ├── requirements.txt
+│   │   ├── src/
+│   │   └── tests/
+│   └── data-service/
+│       ├── Dockerfile
+│       ├── requirements.txt
+│       ├── src/
+│       └── tests/
+│
+├── assets/
+│   ├── common/               # shared utilities and models
+│   │   ├── utils/
+│   │   └── models/
+│   └── repo/                 # external libraries (read-only, never modify)
+│
+├── infrastructure/
+│   ├── terraform/
+│   ├── kubernetes/
+│   └── nginx/
+│
+└── monitoring/
+    ├── prometheus/
+    ├── grafana/
+    └── alertmanager/
+```
+
+<Warning>
+  In a monorepo, the `assets/repo/` directory holds external dependencies. These are **never modified**. They are treated as black boxes — called but never changed. See [Glue Coding](/principles/glue-coding) for the reasoning behind this constraint.
+</Warning>
+
+## Template 4: Full-stack web application
+
+Use this for single-page applications, SaaS products, and frontend/backend separated projects.
+
+```text
+project-name/
+├── README.md
+├── .gitignore
+├── docker-compose.yml
+├── CLAUDE.md
+├── AGENTS.md
+│
+├── frontend/
+│   ├── public/               # static assets
+│   ├── src/
+│   │   ├── components/       # reusable React/Vue components
+│   │   ├── pages/            # route-level components
+│   │   ├── store/            # state management
+│   │   └── utils/
+│   ├── package.json
+│   └── vite.config.js
+│
+└── backend/
+    ├── requirements.txt
+    ├── Dockerfile
+    ├── src/
+    │   ├── api/
+    │   ├── core/
+    │   └── models/
+    └── tests/
+```
+
+## Module boundary principles
+
+The most important architectural decision is how to split modules. The rule is: **split by responsibility, not by feature**.
+
+### The layered architecture pattern
+
+```text
+Presentation layer  (UI / API endpoints)
+       ↓
+Service layer       (business logic, pure functions)
+       ↓
+Data access layer   (database queries, repository pattern)
+       ↓
+Database / external systems
+```
+
+**Rule**: upper layers call lower layers. Lower layers never depend on upper layers. This one rule prevents the majority of coupling problems.
+
+### Module split example: trading system
+
+```text
+market_data/    — price feeds and data ingestion
+strategy/       — signal generation logic
+risk/           — position sizing and risk constraints
+order/          — order submission and tracking
+account/        — balance and P&L tracking
+```
+
+Each module:
+- Does exactly one type of thing
+- Exposes a defined interface
+- Has no knowledge of the modules that call it
+
+## Recommended `.gitignore` template
+
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Data (too large for version control)
+data/
+*.csv
+*.db
+*.sqlite
+*.duckdb
+
+# Logs
+logs/
+*.log
+
+# Models
+models/
+*.h5
+*.pkl
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+.DS_Store
+```
+
+## Technology reference by project type
+
+| Use case | Recommended stack |
+|:---|:---|
+| Web API | FastAPI + Pydantic + SQLAlchemy |
+| Data processing | Pandas + NumPy + Polars |
+| Machine learning | Scikit-learn + XGBoost + LightGBM |
+| Deep learning | PyTorch + TensorFlow |
+| Database | PostgreSQL + Redis |
+| Task queue | Celery + RabbitMQ or Kafka |
+| Monitoring | Prometheus + Grafana |
+| Deployment | Docker + Docker Compose |
+| CI/CD | GitHub Actions |
+
+## New project checklist
+
+Before writing any business logic, verify each item:
+
+- [ ] `README.md` created with project description and setup instructions
+- [ ] `LICENSE` file set
+- [ ] Python virtual environment initialized (`python -m venv .venv`)
+- [ ] `requirements.txt` created with pinned versions
+- [ ] `.gitignore` configured to exclude data, logs, models, and secrets
+- [ ] `.env.example` documents all required environment variables
+- [ ] Directory structure matches one of the templates above
+- [ ] `config.py` or equivalent centralized configuration file created
+- [ ] Code formatter configured (`black` for Python)
+- [ ] Linter configured (`flake8` or `ruff`)
+- [ ] First test written before first feature
+
+## Common architecture mistakes
+
+<AccordionGroup>
+  <Accordion title="Starting with microservices">
+    Microservices are an organizational solution for teams of 10+ engineers. For a single developer or small team, start with a monolith. Extract services only when you have a proven need for independent deployment or scaling.
+  </Accordion>
+  <Accordion title="All code in one file">
+    A single 2,000-line file is not a project — it is a draft. Structure forces clarity. If the code cannot be organized into files, the design is not clear enough.
+  </Accordion>
+  <Accordion title="Architecture chosen for prestige, not maintainability">
+    The goal of architecture is to make the system easy to change. Choose the simplest structure that satisfies the actual requirements, not the most sophisticated one you can justify.
+  </Accordion>
+  <Accordion title="Starting to code before the data flow is clear">
+    Identify what data the system receives, what transformations it applies, and what it produces. Draw this on paper before opening an editor. Code written without a clear data model accumulates implicit state that eventually becomes unmanageable.
+  </Accordion>
+</AccordionGroup>
+
+## Related pages
+
+- [Glue Coding](/principles/glue-coding) — how the `assets/repo/` directory works and why dependencies are immutable
+- [Problem solving frameworks](/principles/problem-solving) — framing the architectural problem before choosing a structure
+- [Common pitfalls](/principles/common-pitfalls) — architectural mistakes and how to recover from them
+- [Playbook: workflow](/playbook/workflow) — how architecture decisions fit into the full development workflow

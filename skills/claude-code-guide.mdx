@@ -1,0 +1,312 @@
+---
+title: "Claude Code CLI skill and usage guide"
+description: "Comprehensive Claude Code CLI guide — 7 core tools, REPL environment, slash commands, MCP integration, hooks, and advanced multi-agent patterns."
+keywords: ["claude code", "claude cli", "AI CLI", "REPL", "MCP", "slash commands", "claude-code-guide"]
+---
+
+Claude Code is Anthropic's AI coding agent that runs in your terminal. This skill gives you a structured, practical guide to Claude Code's full feature set — from the REPL JavaScript environment and built-in tools to MCP integrations, hook automation, and multi-agent collaboration patterns. Load this skill when you want to use Claude Code's advanced capabilities beyond basic prompting.
+
+## When to use this skill
+
+Use this skill when you need to:
+
+- Learn Claude Code's core tools and how to combine them effectively
+- Master the REPL environment for in-context data processing and validation
+- Understand task management workflows and agent delegation
+- Configure MCP servers to connect Claude to external systems
+- Implement hooks for automated code formatting, testing, or notifications
+- Apply advanced patterns like multi-agent code review or progressive development
+- Troubleshoot common errors in tools, file operations, or MCP connections
+
+## The 7 core tools
+
+<AccordionGroup>
+  <Accordion title="REPL — JavaScript runtime environment">
+    A full ES6+ JavaScript sandbox with pre-loaded libraries and file access:
+
+    - **Pre-loaded:** D3.js, MathJS, Lodash, Papaparse, SheetJS
+    - **Language support:** async/await, BigInt, WebAssembly
+    - **File access:** `window.fs.readFile()`
+
+    ```javascript
+    // Use Lodash
+    _.chunk([1, 2, 3, 4], 2);  // [[1,2],[3,4]]
+
+    // Use MathJS
+    math.sqrt(16);  // 4
+
+    // Use D3.js
+    d3.range(10);   // [0,1,2,...,9]
+
+    // Read a file
+    const content = await window.fs.readFile('path/to/file');
+
+    // Fetch external data
+    const result = await fetch('https://api.example.com/data');
+    const json = await result.json();
+    ```
+  </Accordion>
+  <Accordion title="Artifacts — visual and interactive output">
+    Renders React components, Three.js scenes, chart library outputs, HTML, and SVG — interactive output directly in the conversation.
+  </Accordion>
+  <Accordion title="Web Search — live internet search">
+    Searches the web for current information. Available in US region only. Supports domain filtering.
+  </Accordion>
+  <Accordion title="Web Fetch — retrieve page content">
+    Fetches any URL and converts HTML to Markdown for analysis and extraction.
+  </Accordion>
+  <Accordion title="Conversation Search — search history">
+    Searches across previous conversations to retrieve relevant context.
+  </Accordion>
+  <Accordion title="Recent Chats — session history">
+    Accesses recent sessions and conversation history.
+  </Accordion>
+  <Accordion title="End Conversation — cleanup and summary">
+    Summarizes and cleanly closes the current session.
+  </Accordion>
+</AccordionGroup>
+
+## Tool permission model
+
+| Permission level | Tools |
+|:---|:---|
+| Auto-granted | REPL, Artifacts, Web Search, Web Fetch, Conversation Search |
+| Requires explicit authorization | Bash (read/write filesystem), Edit (modify files), Write (create files) |
+
+<Warning>
+  When using `--dangerously-skip-permissions` or `--dangerously-bypass-approvals-and-sandbox`, Claude Code can read and write files without confirmation. Only use these flags in scripts or environments where you control the code being executed.
+</Warning>
+
+## Slash commands
+
+### Built-in commands
+
+| Command | Effect |
+|:---|:---|
+| `/help` | Show available commands and shortcuts |
+| `/clear` | Clear the current conversation |
+| `/plugin` | Manage installed plugins |
+| `/settings` | Open configuration settings |
+
+### Custom commands
+
+Create a file at `.claude/commands/mycommand.md` with the instruction text:
+
+```markdown
+Perform [specific task] according to [specific criteria].
+```
+
+Then invoke it in any session with `/mycommand`.
+
+<Tip>
+  Custom commands are a practical way to encode your team's code review checklist, commit message format, or deployment verification steps as a single slash command.
+</Tip>
+
+## Large file analysis workflow
+
+When working with files too large to read in one pass:
+
+```bash
+# Phase 1: Quantitative assessment
+wc -l filename.md    # line count
+wc -w filename.md    # word count
+wc -c filename.md    # character count
+
+# Phase 2: Structural analysis
+grep "^#{1,6} " filename.md   # extract heading hierarchy
+grep "\`\`\`" filename.md     # identify code blocks
+grep -c "keyword" filename.md # keyword frequency
+
+# Phase 3: Targeted content extraction
+Read filename.md offset=0 limit=50      # file beginning
+Read filename.md offset=N limit=100     # target section
+Read filename.md offset=-50 limit=50    # file end
+```
+
+## MCP integration
+
+Model Context Protocol (MCP) connects Claude Code to external systems — databases, APIs, internal tools, and more.
+
+### Configuration
+
+Create or edit `~/.config/claude/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "my-server": {
+      "command": "node",
+      "args": ["path/to/server.js"],
+      "env": {
+        "API_KEY": "your-key"
+      }
+    }
+  }
+}
+```
+
+Claude Code discovers MCP tools automatically and uses them when relevant. To invoke one explicitly:
+
+```text
+"Use the my-server tool to fetch the latest records"
+```
+
+## Hooks system
+
+Hooks run shell commands at specific points in Claude Code's lifecycle. Configure them in `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "tool-pre-use": "echo 'About to use tool'",
+    "tool-post-use": "echo 'Tool used'",
+    "user-prompt-submit": "echo 'Processing prompt'"
+  }
+}
+```
+
+**Common hook uses:**
+- Auto-format code after every edit (`tool-post-use: "prettier --write ."`)
+- Run tests after file changes
+- Enforce commit message format before a Git commit
+- Send a notification when a long-running task completes
+
+## Development workflow patterns
+
+### File analysis workflow
+
+```bash
+# Explore → Understand → Implement
+ls -la                   # list files and permissions
+Read file.py             # read file content
+grep "function" file.py  # search for patterns
+# then implement changes
+```
+
+### Algorithm validation workflow
+
+Use the REPL to test and validate logic before writing it to a file:
+
+```javascript
+// 1. Test the logic in REPL
+const inputs = [1, -1, 0, 100];
+inputs.forEach(n => {
+  console.log(n, myAlgorithm(n));
+});
+
+// 2. Verify edge cases
+// 3. Then write the validated code to file
+```
+
+### Data exploration workflow
+
+```text
+1. Read the data file (CSV, JSON, etc.)
+2. Parse and analyze it in REPL using Papaparse or Lodash
+3. Visualize results with Artifacts
+```
+
+## Advanced patterns
+
+### Multi-agent collaboration
+
+Delegate focused sub-tasks to specialized agents using the Task tool:
+
+```text
+"Start a dedicated agent to review this algorithm for time complexity"
+```
+
+Sub-agents have independent context windows, focus on a single task, and return results to the parent agent.
+
+### Progressive development
+
+1. Generate the base structure
+2. Add core business logic
+3. Implement details and error handling
+4. Write tests and run them
+5. Optimize based on results
+
+### Validation-driven development
+
+1. Write test cases first (describe expected inputs and outputs)
+2. Implement the feature
+3. Run tests
+4. Fix failures and iterate
+
+## Quality assurance commands
+
+```bash
+# Run tests
+npm test
+pytest
+
+# Type checking
+mypy script.py
+tsc --noEmit
+
+# Linting
+eslint src/
+flake8 .
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Tool call fails">
+    Check the permission level of the tool. Verify syntax is correct. Confirm file paths exist. Read the error message carefully — Claude Code provides specific failure reasons.
+  </Accordion>
+  <Accordion title="REPL runs slowly">
+    Reduce dataset size. Use streaming or chunked processing. Split large computations across multiple REPL calls.
+  </Accordion>
+  <Accordion title="MCP server not responding">
+    Verify the server process is running. Check `~/.config/claude/mcp_config.json` for syntax errors. Confirm environment variables are set. Check the server's own logs.
+  </Accordion>
+  <Accordion title="File operation errors">
+    Confirm the file exists before editing. Verify read/write permissions. Use absolute paths where possible to avoid working-directory ambiguity.
+  </Accordion>
+</AccordionGroup>
+
+## Security model
+
+Each tool runs in an isolated environment:
+
+| Tool | Access |
+|:---|:---|
+| REPL | No filesystem access |
+| Bash | Requires explicit authorization; write access is scoped |
+| Web Search / Fetch | Network access to approved domains only |
+
+**Best practices:** apply the principle of least privilege, review all generated code before executing it, never share API keys or credentials in the conversation, and audit hooks and configuration files regularly.
+
+## Examples
+
+### Example 1: data analysis in REPL
+
+```javascript
+const data = await window.fs.readFile('data.csv');
+const parsed = Papa.parse(data, { header: true });
+const values = parsed.data.map(row => parseFloat(row.value));
+const avg = _.mean(values);
+const std = math.std(values);
+console.log(`Mean: ${avg}, Std dev: ${std}`);
+```
+
+### Example 2: batch file search
+
+```bash
+grep -r "TODO" src/
+find . -name "*.py" -type f
+```
+
+### Example 3: fetch and analyze external data
+
+```text
+"Use web_fetch to retrieve https://api.example.com/data,
+then analyze the JSON structure in REPL and summarize the key fields"
+```
+
+## References
+
+- [Anthropic Claude Code official documentation](https://docs.anthropic.com/en/docs/claude-code/)
+- [Headless CLI skill](/skills/headless-cli) — run Claude Code non-interactively in scripts
+- [AI Swarm methodology](/methods/ai-swarm) — multi-agent coordination patterns

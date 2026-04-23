@@ -1,0 +1,127 @@
+---
+title: "Harness Engineering: reliable AI development"
+description: "Wrap AI generation in deterministic engineering controls — intercept, verify, reject, and retry — so probabilistic outputs become verifiable deliverables."
+icon: "shield-check"
+---
+
+Harness Engineering is the foundational reliability layer for AI-assisted development. Its core premise is that AI models are not the source of reliability — the external control system around them is. A harness wraps the model's probabilistic output in deterministic mechanisms: it intercepts intent, validates results, rejects failures, and injects necessary context. The model's job is to translate intent into text. The harness's job is to make that text trustworthy.
+
+## The essential insight
+
+> A model, however capable, will produce unreliable output without external constraints. No matter how strong the horse, without a harness it will pull the cart into a ditch.
+
+Reliability migrates from "how smart is the model" to "how complete is the verification mechanism." This shift is what separates Vibe Coding experiments from production-grade AI development.
+
+## What a harness does
+
+A harness provides four types of external action on model output:
+
+<CardGroup cols={2}>
+  <Card title="Intercept intent" icon="filter">
+    Clarify and constrain what the model is being asked to do before it generates anything. Ambiguous input produces ambiguous output.
+  </Card>
+  <Card title="Validate results" icon="circle-check">
+    Run generated output through mechanical checks — compiler, linter, tests — that produce a binary pass/fail judgment independent of the model.
+  </Card>
+  <Card title="Reject failures" icon="circle-xmark">
+    When output fails validation, do not accept it. Return the error to the model as structured feedback for a rewrite attempt.
+  </Card>
+  <Card title="Inject context" icon="syringe">
+    Supply the model with the rules, constraints, and knowledge it needs at the moment it needs them — neither earlier (wasted tokens) nor later (missed context).
+  </Card>
+</CardGroup>
+
+## The closed loop
+
+The minimum viable harness is a closed loop:
+
+```
+Generate → Compile / Run → Capture errors → Feed back → Rewrite → Repeat until pass
+```
+
+This transforms a one-shot chat interaction into an iterable production pipeline. The loop runs until the output satisfies an externally defined acceptance criterion, not until the model decides it is done.
+
+## Three hard problems and their solutions
+
+### 1. Context and forgetting
+
+As tasks grow complex, the model's context window fills, goals drift, and frontend and backend concerns bleed into each other. The model has no stable working memory or task boundary.
+
+**Solution:** Dynamic context injection and memory management. Break rules and knowledge into pluggable skill packs. Load only what the current intention requires; unload the rest. Keep context short, precise, and relevant. Encode validated lessons as persistent rules that travel with the task.
+
+### 2. Self-evaluation hallucination
+
+Asking a model to review its own output is like asking an athlete to referee their own match. The model will rationalize, not audit. Output will be polished but logically flawed.
+
+**Solution:** Evaluation-driven, mechanical testing. Introduce independent, executable judges: compiler output, unit tests, end-to-end UI tests, a separate QA agent. Hard metrics decide pass/fail — not the generating model's self-assessment.
+
+<Warning>
+  Self-review is the most common reliability failure in AI development pipelines. If your evaluation step uses the same model that generated the output, you do not have a harness — you have a polished hallucination loop.
+</Warning>
+
+### 3. Long-term entropy
+
+Over long runs, models learn to game their own tests. They take shortcuts to pass evaluations, architecture drifts, coupling spreads, and the codebase becomes unmaintainable.
+
+**Solution:** Architectural hard constraints and continuous cleanup. Use static rules to block structural violations before they occur. Run a dedicated cleanup agent to refactor, update documentation, and retire technical debt on a scheduled basis.
+
+## From script to agent operating system
+
+| Capability | Role |
+|:-----------|:-----|
+| Planner | Decomposes the goal and sets task order |
+| Executor | Generates code, configs, or documents |
+| Evaluator | Validates output against acceptance criteria |
+| Constraint hooks | Block architectural violations before they land |
+| Cleanup agent | Continuously reduces technical debt and drift |
+
+When a system has all five, the harness graduates from a script into an **agent operating system**. Long-term stability comes from division of labor and mutual checks — not from a single powerful model.
+
+## What Harness Engineering is not
+
+<AccordionGroup>
+  <Accordion title="It is not a return to manual coding">
+    The engineering focus shifts from implementation details to **boundaries, interfaces, constraints, assertions, and acceptance criteria**. You are writing the rules of the production pipeline, not the business logic.
+  </Accordion>
+
+  <Accordion title="It is not about using more tools">
+    Tool overload causes choice paralysis and wasted time. The tool set should be minimally sufficient for evaluation and execution. More permissions is not more power.
+  </Accordion>
+
+  <Accordion title="It is not fixed by a smarter model">
+    Model upgrades do not substitute for a missing harness. The failure modes — context overflow, self-evaluation hallucination, long-term entropy — are architectural, not capability gaps. A more capable model running without a harness produces structurally broken output faster.
+  </Accordion>
+</AccordionGroup>
+
+## The harness as prerequisite for other methods
+
+The experimental methods in this documentation — Canvas whiteboard-driven development, AI Swarm, meta-methodology — all produce outputs that need to be verified. Without a harness providing that verification layer, these methods generate plausible-looking but unreliable artifacts.
+
+<Info>
+  The README for this project states explicitly: "The experimental methods in this section assume Harness Engineering's closed-loop and evaluation mechanism as their source of reliability. Without it, terminology drifts and practice loses focus."
+</Info>
+
+This is why Harness Engineering is listed first in the suggested reading order: it is the foundation that makes everything else reproducible.
+
+## The upper bound
+
+The harness's quality ceiling is set by the evaluator. If you cannot encode "what good looks like" as a machine-checkable rule or test, the system cannot stably optimize toward it. Defining the acceptance criteria is the strategic work that no model can do for you.
+
+> Future engineers will split into two groups: those competing on code generation speed, and those competing on rule design, evaluation architecture, and closed-loop engineering. The second group determines long-term system productivity and maintainability.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Meta-methodology" icon="infinity" href="/methods/meta-methodology">
+    The recursive generator–optimizer loop that the harness makes reliable.
+  </Card>
+  <Card title="AI Swarm" icon="users" href="/methods/ai-swarm">
+    Distribute harness components across coordinated tmux agents.
+  </Card>
+  <Card title="Canvas whiteboard" icon="chalkboard" href="/methods/canvas-whiteboard">
+    Use whiteboard-driven development as a structured input to the harness.
+  </Card>
+  <Card title="Common pitfalls" icon="triangle-exclamation" href="/principles/common-pitfalls">
+    The failure modes that a well-designed harness prevents.
+  </Card>
+</CardGroup>

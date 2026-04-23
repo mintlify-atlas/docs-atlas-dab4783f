@@ -1,0 +1,159 @@
+---
+title: "PostgreSQL skill: complete database expert module"
+description: "Load the PostgreSQL skill to get expert-level database assistance: schema design, SQL queries, performance tuning, migrations, and connection management."
+icon: "database"
+---
+
+The PostgreSQL skill gives AI models access to comprehensive, structured knowledge extracted directly from the official PostgreSQL documentation. When you activate it, the AI stops guessing at syntax and instead reasons from authoritative reference material covering SQL, connection management, security, administration, and advanced features — all available without you having to paste in documentation yourself.
+
+## When to trigger this skill
+
+The skill description reads:
+
+> PostgreSQL database documentation — SQL queries, database design, administration, performance tuning, and advanced features. Use when working with PostgreSQL databases, writing SQL, or managing database systems.
+
+Trigger it when you are:
+
+- Writing or debugging SQL queries against a PostgreSQL database
+- Designing or migrating a database schema
+- Configuring database connections in application code
+- Tuning queries or indexes for performance
+- Working with PostgreSQL-specific features such as `RETURNING`, predefined roles, `LISTEN`/`NOTIFY`, or row-level security
+- Administering a PostgreSQL server (users, roles, permissions)
+
+## Key capabilities
+
+<CardGroup cols={2}>
+  <Card title="Connection management" icon="plug">
+    Connection string formats (keyword/value and URI), `PQconnectdbParams`, multi-host strings, SSL modes, and security guidance around `search_path` in shared schemas.
+  </Card>
+  <Card title="Schema design" icon="table">
+    Table creation, data types, constraints, indexes, and schema organization. Guidance on when to use sequences, UUIDs, or generated columns.
+  </Card>
+  <Card title="Advanced SQL" icon="code">
+    `RETURNING` clauses on `INSERT`, `UPDATE`, `DELETE`, and `MERGE`. Window functions, CTEs, lateral joins, and full-text search.
+  </Card>
+  <Card title="Security & roles" icon="shield">
+    Predefined roles (`pg_checkpoint`, `pg_maintain`, `pg_monitor`), `GRANT` statements, row-level security policies, and the principle of least privilege.
+  </Card>
+  <Card title="Performance tuning" icon="gauge">
+    `EXPLAIN`/`EXPLAIN ANALYZE`, index types (B-tree, GIN, GiST, BRIN), query planner statistics, and `pg_stat_*` monitoring views.
+  </Card>
+  <Card title="Migrations" icon="arrows-rotate">
+    Safe schema change patterns: adding nullable columns first, backfilling in batches, renaming with compatibility shims, and zero-downtime deployment techniques.
+  </Card>
+</CardGroup>
+
+## Reference files included
+
+The skill ships with two organized reference files that the AI can consult on demand:
+
+| File | Contents |
+|------|----------|
+| `getting_started.md` | Connection setup, libpq functions, client authentication, `pg_hba.conf` |
+| `sql.md` | Full SQL reference: DDL, DML, queries, functions, operators, type system |
+
+## Practical examples
+
+### Connecting from Python
+
+```python
+import psycopg2
+
+# Keyword/value connection string
+conn = psycopg2.connect(
+    "host=localhost port=5432 dbname=mydb user=app connect_timeout=10"
+)
+
+# URI format — equivalent to the above
+conn = psycopg2.connect(
+    "postgresql://app@localhost:5432/mydb?connect_timeout=10"
+)
+```
+
+<Note>
+  When untrusted users have access to the database, begin each session by removing publicly-writable schemas from `search_path`. Set `options=-csearch_path=` in the connection string or run `SELECT pg_catalog.set_config('search_path', '', false)` immediately after connecting.
+</Note>
+
+### Returning data from a write
+
+```sql
+-- Retrieve the generated ID after insert
+INSERT INTO users (firstname, lastname)
+VALUES ('Ada', 'Lovelace')
+RETURNING id;
+
+-- See prices after a bulk update
+UPDATE products
+SET price = price * 1.10
+WHERE price <= 99.99
+RETURNING name, price AS new_price;
+
+-- Audit deleted rows without a second query
+DELETE FROM products
+WHERE obsoletion_date = 'today'
+RETURNING *;
+```
+
+### Granting predefined roles
+
+```sql
+-- Let an admin user send signals to backends
+GRANT pg_signal_backend TO admin_user;
+
+-- Allow a monitoring role to read all statistics
+GRANT pg_monitor TO monitoring_user;
+
+-- Let a maintenance role run VACUUM and REINDEX on all tables
+GRANT pg_maintain TO dba_user;
+```
+
+<Warning>
+  Predefined roles grant access to privileged capabilities and sensitive system information. Only grant them where genuinely needed, and monitor release notes because specific permissions may change across PostgreSQL versions.
+</Warning>
+
+### Multi-host connection string
+
+```text
+postgresql://host1:5432,host2:5432/mydb?target_session_attrs=any&application_name=myapp
+```
+
+This instructs libpq to try each host in turn and connect to the first that accepts a session matching the `target_session_attrs` policy. Useful for read replicas or high-availability setups.
+
+## Using the skill in practice
+
+<Steps>
+  <Step title="Invoke the skill">
+    In your AI coding tool, reference the PostgreSQL skill. The skill loads the quick reference and makes both reference files available for consultation.
+  </Step>
+  <Step title="Ask your database question">
+    Describe what you want to achieve — schema design, a query problem, a permissions issue — using the Goal–Current–Gap language from the [problem-solving framework](/principles/problem-solving).
+  </Step>
+  <Step title="Request reference lookups">
+    If you need deep detail, ask the AI to consult `references/sql.md` or `references/getting_started.md` from the skill for authoritative syntax and examples.
+  </Step>
+  <Step title="Verify with EXPLAIN">
+    For performance-sensitive queries, ask the AI to produce an `EXPLAIN ANALYZE` interpretation alongside the query so you understand what the planner will actually do.
+  </Step>
+</Steps>
+
+<Tip>
+  Pair this skill with the [TimescaleDB skill](/skills/timescaledb) when your schema includes time-series or event data. TimescaleDB is a PostgreSQL extension, so both skills complement each other without conflict.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="TimescaleDB skill" icon="chart-line" href="/skills/timescaledb">
+    Extend PostgreSQL with hypertables, continuous aggregates, and time-series compression.
+  </Card>
+  <Card title="Skills overview" icon="layer-group" href="/skills/overview">
+    How the skill system works and when to use each skill.
+  </Card>
+  <Card title="Glue coding" icon="link" href="/principles/glue-coding">
+    How to wire proven libraries — including database drivers — into your project correctly.
+  </Card>
+  <Card title="Polymarket case study" icon="chart-bar" href="/case-studies/polymarket">
+    A real project that used PostgreSQL and Python together to analyze prediction market data.
+  </Card>
+</CardGroup>

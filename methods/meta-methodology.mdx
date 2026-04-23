@@ -1,0 +1,129 @@
+---
+title: "Meta-methodology: self-optimizing AI systems"
+description: "Build a recursive generator–optimizer loop so your AI system continuously self-improves rather than producing fixed one-shot outputs."
+icon: "infinity"
+---
+
+Meta-methodology is a framework for building AI systems that improve themselves. Rather than optimizing individual outputs, you build a recursive loop where a **generator** creates prompts and skills, an **optimizer** improves them, and the improved artifacts are fed back into the system to raise the ceiling for the next cycle. The system's goal is not any single output — it is convergence toward a stable, self-consistent generative capability.
+
+## The two core roles
+
+<CardGroup cols={2}>
+  <Card title="α-prompt (Generator)" icon="circle-plus">
+    A "mother prompt" whose sole job is to **create** other prompts and skills. It produces the raw material that the optimizer works on.
+  </Card>
+  <Card title="Ω-prompt (Optimizer)" icon="circle-arrow-up">
+    A "mother prompt" whose sole job is to **optimize** other prompts and skills. It evaluates generator output against an ideal target and produces improved versions.
+  </Card>
+</CardGroup>
+
+## The four-step recursive lifecycle
+
+<Steps>
+  <Step title="Bootstrap">
+    Use AI to generate the initial versions of the α-prompt and Ω-prompt (v1). These are deliberately rough — they only need to be good enough to start the loop.
+  </Step>
+
+  <Step title="Self-correction">
+    Apply Ω-prompt (v1) to optimize α-prompt (v1). The result is a stronger α-prompt (v2) that generates better output than the original.
+  </Step>
+
+  <Step title="Generation">
+    Use the evolved α-prompt (v2) to generate all target prompts and skills. Because the generator has been improved, its output is higher quality from the start.
+  </Step>
+
+  <Step title="Recursive loop">
+    Feed the new, stronger artifacts — including any improved version of the Ω-prompt — back into the system as inputs for the next optimization cycle. Each pass raises the baseline.
+  </Step>
+</Steps>
+
+The loop never fully terminates. Each iteration brings the system closer to its target state through continuous recursive optimization.
+
+## The formal model
+
+The system can be described precisely. Let `G` be a generator that maps intentions to prompts or skills, `O` be an optimization operator that improves outputs against an ideal target `Ω`, and `M` be a meta-generative operator that updates the generator itself using optimized artifacts.
+
+One step of the loop:
+
+```
+P   = G(I)          # generator produces an artifact from intention I
+P*  = O(P, Ω)       # optimizer improves it toward the target
+G'  = M(G, P*)      # meta-operator updates the generator using the improved artifact
+```
+
+Repeated application produces a sequence of improving generators:
+
+```
+G₀ → G₁ → G₂ → ... → G*
+```
+
+A **stable generative capability** is the fixed point of this process — the generator `G*` whose outputs already satisfy the criteria needed for its own improvement. The system has converged when further optimization produces no meaningful change.
+
+In λ-calculus terms, this fixed point is expressed as:
+
+```
+STEP ≡ λG. (M G)((O (G I)) Ω)
+G*   ≡ Y STEP         # Y is the fixed-point combinator
+```
+
+The generator is defined as the fixed point of a functional that transforms generators using their own outputs — a self-referential loop formalized.
+
+## Why fixed points matter
+
+Most AI workflows optimize outputs. This system optimizes the *mechanism that produces outputs*. Improvement happens in generator space rather than output space. The practical consequence: as the loop runs, every subsequent task benefits from a stronger generator, not just the current one.
+
+<Info>
+  This mirrors classical results in computation theory — bootstrapping compilers, self-hosting languages, and meta-circular interpreters all instantiate the same fixed-point structure.
+</Info>
+
+## Putting it into practice
+
+```bash
+# Step 1: Generate initial α and Ω prompts
+# [Ask AI: "Create an α-prompt whose job is to generate prompts for X domain"]
+# [Ask AI: "Create an Ω-prompt whose job is to evaluate and improve prompts"]
+
+# Step 2: Run one optimization cycle
+# [Feed α-prompt v1 to Ω-prompt v1 and request an improved version]
+
+# Step 3: Use evolved α-prompt v2 to generate your actual target prompts
+
+# Step 4: Store improved prompts as the new baseline and repeat
+```
+
+<Tip>
+  Start with a narrow domain. A generator specialized for one task type converges faster and produces more useful fixed points than a generic generator.
+</Tip>
+
+## Connection to other methods
+
+The meta-methodology is the most abstract layer in the experimental methods stack. It provides the theoretical grounding for why the other methods work:
+
+- **Canvas whiteboard** generates a shared representation; the optimizer can evaluate whether that representation matches the intended architecture.
+- **AI Swarm** provides the execution substrate; the generator–optimizer loop can be distributed across swarm agents.
+- **Harness Engineering** provides the closed-loop evaluation that the optimizer relies on to produce meaningful improvements.
+
+<Note>
+  The meta-methodology assumes you have a reliable evaluation mechanism. Without the ability to judge whether `P*` is actually better than `P`, the optimization step produces noise rather than signal. See [Harness Engineering](/methods/harness-engineering) for how to build that evaluation layer.
+</Note>
+
+## The ultimate goal
+
+Through this never-ending recursive optimization loop, the system achieves self-transcendence at each iteration — approaching the target state without being explicitly programmed to reach it. The engineer's role shifts from writing outputs to defining the target `Ω` and ensuring the evaluation mechanism is sound.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Harness Engineering" icon="shield-check" href="/methods/harness-engineering">
+    The evaluation and closed-loop mechanism that makes optimization meaningful.
+  </Card>
+  <Card title="AI Swarm" icon="users" href="/methods/ai-swarm">
+    Distribute the generator–optimizer loop across multiple coordinated agents.
+  </Card>
+  <Card title="Skills overview" icon="wand-magic-sparkles" href="/skills/overview">
+    Skills are the artifacts that the generator creates and the optimizer improves.
+  </Card>
+  <Card title="SOP generator skill" icon="list-check" href="/skills/sop-generator">
+    An example of a specialized generator for producing standard operating procedures.
+  </Card>
+</CardGroup>

@@ -1,0 +1,172 @@
+---
+title: "Vibe Coding philosophy and first principles"
+description: "The conceptual foundations of Vibe Coding: planning-driven development, the object-state-relation framework, and a self-improving meta-methodology."
+---
+
+Vibe Coding CN is built on a clear division of labor: you describe intent and validate results; the AI understands intent, executes operations, and generates output. Everything in this guide follows from that single principle. The philosophy section makes the reasoning behind that principle explicit — and gives you the conceptual tools to apply it consistently, even as AI capabilities change.
+
+## Core mindset
+
+The foundational mindset is captured in three lines:
+
+> **One**: Install an AI CLI — gain the ability to converse with AI.
+> **Two**: AI can read and write any file — you no longer need to edit manually.
+> **Three**: AI can configure any environment, install dependencies, deploy projects.
+> **Everything**: AI generates code, docs, tests, scripts — everything can be generated.
+
+This is not a claim about magic. It is a description of a working model: once you accept that AI can do the mechanical work, your job shifts entirely to **describing what you want** and **verifying that you got it**.
+
+<Note>
+  The mindset statement from the source: "I am a parasite of AI — without AI I lose all capability." This is not self-deprecation. It is a reminder to keep AI-first thinking at the center of every decision.
+</Note>
+
+## The nine-concept framework
+
+All methods, workflows, and skills in this guide share a common conceptual vocabulary. The framework is:
+
+**object → state → snapshot → sequence → process → transformation → identity/difference → relation**
+
+These nine concepts form a layered model for understanding any system:
+
+<AccordionGroup>
+  <Accordion title="Layer 1: Existence — object and state">
+    An **object** is any unit we can identify, distinguish, and track — a tree, a machine, an algorithm, a process, a service. The key is not that it exists independently, but that it can be recognized as a relatively stable unit with boundaries and continuity.
+
+    A **state** is the object's specification at a given moment and under given conditions — the sum of its properties, position, configuration, or role. Without state, an object is just an empty name. With state, it becomes something that can be analyzed, compared, and recorded.
+
+    *In software*: objects are data entities, modules, processes, nodes. States are memory values, configurations, contexts.
+  </Accordion>
+  <Accordion title="Layer 2: Representation — snapshot and sequence">
+    A **snapshot** is a static cross-section of a state — a frozen moment that can be observed, recorded, and compared. A database backup, a version commit, a measurement at time T.
+
+    A **sequence** is multiple snapshots ordered by time, logic, or generation rules. When we stop asking "what is it now" and start asking "what happened before and after," snapshots become sequences.
+
+    *In software*: snapshots are system images, backups, version archives. Sequences are logs, execution traces, input streams.
+  </Accordion>
+  <Accordion title="Layer 3: Generation — process and transformation">
+    A **process** is the dynamic whole of a sequence — not just states listed in order, but states with generative relationships, evolutionary direction, and internal connection. A process has continuity, directionality, internal mechanism, and produces new states and structures.
+
+    A **transformation** is the rule, operation, or mechanism that moves an object from one state to another. Without transformation, a process is just a phenomenon. With transformation, we can build a mechanism model and understand why we moved from A to B.
+
+    *In software*: processes are program runs, workflows, protocol executions. Transformations are algorithms, state transition functions, data processing rules.
+  </Accordion>
+  <Accordion title="Layer 4: Judgment — identity and difference">
+    **Identity** asks: in the midst of change, why do we still recognize something as "itself"? A person whose cells have all been replaced. A ship whose planks have all been swapped. A software system that has been upgraded a hundred times. Identity is not absolute immutability — it is a sustainable principle of recognition, grounded in material, structural, functional, causal, or narrative continuity.
+
+    **Difference** is what makes recognition possible in the first place. Without difference, there is no identification — identification is itself the act of distinguishing this from that. Identity and difference are mutually defining: without continuity, you cannot say "it changed"; without change, you cannot say "it is still the same."
+  </Accordion>
+  <Accordion title="Layer 5: Structure — relation">
+    **Relation** is the connection between objects, states, processes — spatial, temporal, causal, logical, functional, social, semantic. Many objects are not first isolated and then connected; they are defined by their relations. A father only exists within kinship relations. A node only exists within a network. A word only exists within syntactic and semantic relations.
+
+    The relational perspective shifts understanding from entity-centered to structure-centered: to understand something, ask not only "what is it" but "what is it connected to" and "in what network does it operate."
+  </Accordion>
+</AccordionGroup>
+
+This framework is not a philosophical exercise. It is a practical vocabulary for working with AI. When you describe a problem, debug a system, or write a prompt, you are implicitly using these concepts. Making them explicit makes your descriptions more precise — and your AI more effective.
+
+## Key principles
+
+The following principles distill the guide's methodology into actionable rules:
+
+<CardGroup cols={2}>
+  <Card title="Context is first-order" icon="layers">
+    Context is the first-order element of Vibe Coding. Garbage in, garbage out. Every prompt is only as good as the context it carries.
+  </Card>
+  <Card title="Planning before code" icon="list-check">
+    Structure first, then code. Write the plan, generate the architecture, confirm the intent — then let AI implement.
+  </Card>
+  <Card title="Purpose-driven execution" icon="crosshairs">
+    Every action during development revolves around purpose. Define the goal clearly before delegating any task to AI.
+  </Card>
+  <Card title="Modular by default" icon="puzzle-piece">
+    Organize by responsibility. One module, one concern. Monolithic files are the leading cause of AI-assisted projects going out of control.
+  </Card>
+  <Card title="Interface first, implementation second" icon="plug">
+    Define interfaces and contracts before writing implementations. This constrains AI output and prevents scope creep.
+  </Card>
+  <Card title="Documentation is context, not afterthought" icon="file-lines">
+    Write documentation as you build. It is not a summary — it is the context that keeps AI aligned across sessions.
+  </Card>
+</CardGroup>
+
+Additional principles from practice:
+
+- **Systemic thinking**: start from entities, links, and functions/purpose
+- **Data and functions are everything in programming**
+- **Use the Pareto principle**: focus on the 20% that matters
+- **Imitation first**: ask AI whether a suitable repository already exists before building from scratch
+- **Debug with minimum reproducible examples**: expected vs. actual + minimal reproduction
+- **Persist AI errors as experience**: when a problem recurs, have AI search the accumulated error collection for solutions
+
+## The philosophy toolbox: 23 methods
+
+The guide documents 23 philosophical methods adapted for engineering practice. The goal is to make "vibe (exploration)" systematic — turning it into verifiable, iterable, convergent engineering output. Each method includes: use case, concrete action, Python tools, and a copy-ready prompt.
+
+The recommended default workflow:
+
+<Steps>
+  <Step title="Phenomenological reduction">
+    Write the four-piece card: phenomenon (actual) / intent (expected) / context (constraints) / boundary (explicit non-goals). Clear all assumptions before analysis.
+  </Step>
+  <Step title="Specification">
+    Define types, schema, error semantics, invariants. Make behavior machine-checkable.
+  </Step>
+  <Step title="Checkers">
+    Unit tests, property tests, lint, type checking, key assertions. Make the system falsifiable.
+  </Step>
+  <Step title="Minimal implementation">
+    Implement only the main path. Get it running.
+  </Step>
+  <Step title="Counterexample-driven iteration">
+    Use Hypothesis, boundary cases, differential testing, benchmarks. Find failure modes.
+  </Step>
+  <Step title="Convergent refactoring">
+    Delete complexity, stabilize concepts, harden interfaces, complete documentation. Create a stable starting point for the next iteration.
+  </Step>
+</Steps>
+
+Key methods by scenario:
+
+| Scenario | Recommended methods |
+|---|---|
+| Unclear requirements | Phenomenological reduction + hermeneutics + concept engineering |
+| Unstable quality | Falsificationism + formal methods + error epistemology |
+| Debugging efficiency | Abductive reasoning + Bayesian belief updating + triangulation |
+| Complex systems | Systems theory + computational philosophy + reflective equilibrium |
+
+## Meta-methodology: the generator/optimizer loop
+
+The most abstract level of the philosophy is the meta-methodology: a recursive self-improving loop for AI systems.
+
+The two core roles:
+
+- **α-prompt (Generator)**: a "mother" prompt whose only job is to generate other prompts or skills
+- **Ω-prompt (Optimizer)**: a "mother" prompt whose only job is to optimize other prompts or skills
+
+The recursive lifecycle:
+
+1. **Bootstrap**: use AI to generate initial versions of the α-prompt and Ω-prompt (v1)
+2. **Self-correction and evolution**: use `Ω-prompt (v1)` to optimize `α-prompt (v1)`, producing a stronger `α-prompt (v2)`
+3. **Generation**: use the evolved `α-prompt (v2)` to generate target prompts and skills
+4. **Recursive loop**: feed new outputs (including new versions of the Ω-prompt) back into the system, triggering further optimization
+
+The ultimate goal: through continuous recursive optimization, the system exceeds itself in each iteration and converges toward a predefined target state.
+
+This meta-methodology is the theoretical foundation behind the [Skills library](/skills/overview) and the [SOP generator skill](/skills/sop-generator).
+
+## What to read next
+
+<CardGroup cols={2}>
+  <Card title="Problem-solving framework" icon="puzzle-piece" href="/principles/problem-solving">
+    The minimal framework: goal → current state → gap → path. The foundation for every task you delegate to AI.
+  </Card>
+  <Card title="Glue Coding" icon="link" href="/principles/glue-coding">
+    The evolved form of Vibe Coding: compose proven libraries, focus attention on connection methods.
+  </Card>
+  <Card title="Meta-methodology" icon="rotate" href="/methods/meta-methodology">
+    Deep dive into the generator/optimizer recursive loop and how to apply it to your own prompt and skill development.
+  </Card>
+  <Card title="Philosophy toolbox" icon="flask" href="/methods/harness-engineering">
+    Harness Engineering: the closed-loop evaluation mechanism that makes the philosophy toolbox reliable.
+  </Card>
+</CardGroup>

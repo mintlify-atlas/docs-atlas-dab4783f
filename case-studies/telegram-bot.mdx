@@ -1,0 +1,140 @@
+---
+title: "Building a Telegram bot with AI pair programming"
+description: "A Python Telegram bot hit a cryptic Markdown parser error in production. AI pair programming diagnosed the byte-level root cause and fixed it in one pass."
+icon: "robot"
+---
+
+This case study documents the development of a Python Telegram bot that sends formatted reports to users. The project is straightforward in scope — fetch data, format a message, send it — but it produced one of the most instructive debugging sessions in the Vibe Coding practice: a single-character formatting error that caused Telegram's Markdown parser to fail silently with a cryptic byte offset error, and how AI pair programming found and fixed it precisely.
+
+## What was built
+
+A Telegram bot service (`services/telegram-service/src/bot.py`) that:
+
+- Receives a trigger (a calculation completing, a report being ready)
+- Formats the result as a structured Telegram message with a code block header listing the attached filenames
+- Sends the message via the Telegram Bot API using `python-telegram-bot`
+
+The bot was part of a larger data pipeline. The Telegram service was the delivery layer — its job was to format and send, reliably, whatever upstream services produced.
+
+## Technology stack
+
+- **Language:** Python
+- **Library:** `python-telegram-bot`
+- **API:** Telegram Bot API with `ParseMode.MARKDOWN`
+- **Message format:** Telegram MarkdownV1 (not MarkdownV2) with code fences for filename display
+
+## The bug
+
+After a calculation completed, sending the report message failed with:
+
+```text
+Can't parse entities: can't find end of the entity starting at byte offset 168
+```
+
+This error comes from Telegram's server-side Markdown parser. It means the parser found an opening Markdown entity — in this case a triple-backtick code fence — but could not find the matching closing entity. The message was rejected entirely; no notification was delivered.
+
+### Root cause
+
+The `header` variable in `bot.py` was constructed using string concatenation with explicit `\n` characters:
+
+```python
+# Broken: the \n after the opening ``` confuses Telegram's parser
+header = (
+    "```\n"
+    f"{filename}\n"
+    "```\n"
+)
+```
+
+Telegram's Markdown parser requires that triple-backtick fences appear alone on their own line with no trailing characters between the fence and the newline. When Python's string concatenation produces `"```\n"`, the `\n` is part of the same logical token. Telegram's parser sees this as an incomplete fence — it interprets the newline as part of the fence syntax rather than the line terminator.
+
+### The fix
+
+Switching to a triple-quoted f-string ensures that the backtick sequences are genuinely on their own lines with natural line endings:
+
+```python
+# Fixed: triple-quoted string puts ``` on its own line naturally
+header = f"""报告见附件
+```
+{filename}
+{ai_filename}
+```
+"""
+```
+
+The triple-quoted form produces the byte sequence exactly as Telegram expects: fence characters, newline, content, newline, fence characters, newline — with no ambiguity about where each line ends.
+
+**Modified file:** `services/telegram-service/src/bot.py`, lines 293–308.
+
+## How AI pair programming helped
+
+<Steps>
+  <Step title="Describe the error precisely">
+    The error message — `can't find end of the entity starting at byte offset 168` — was pasted into the AI context verbatim. AI immediately recognized this as a Telegram Markdown parser error caused by a malformed code fence.
+  </Step>
+  <Step title="Identify the minimal failing example">
+    AI asked to see the exact string being sent. Once the `header` variable was shown, it identified the concatenation pattern as the source of the issue without needing to reproduce it locally.
+  </Step>
+  <Step title="Explain the parser's behavior">
+    AI explained why Telegram's parser behaves differently from most Markdown parsers: it is strict about line boundaries and does not tolerate trailing characters on fence lines. This made the fix obvious rather than just mechanical.
+  </Step>
+  <Step title="Provide the corrected code">
+    AI produced the triple-quoted fix and explained why the byte-sequence produced by the f-string matches Telegram's expectations exactly.
+  </Step>
+</Steps>
+
+<Tip>
+  When you encounter a parsing error from an external service with a byte offset in the message, the offset is your best diagnostic tool. Count bytes from the start of the message to that position and inspect what character sequence appears there. In this case, offset 168 pointed directly to the malformed fence.
+</Tip>
+
+## Lessons learned
+
+<AccordionGroup>
+  <Accordion title="String concatenation is not the same as multi-line strings">
+    Python's implicit string concatenation joins the strings logically but the resulting bytes are identical to writing them in a single string. The `\n` in `"```\n"` is just a byte — it does not carry any meaning about Markdown line structure. Triple-quoted strings express intent clearly: the backticks are genuinely on their own line.
+  </Accordion>
+  <Accordion title="API error messages from external services are precise — read them carefully">
+    "Can't find end of the entity starting at byte offset 168" is not a vague error. It is telling you exactly what happened and where. The instinct to search for the error message online before reading it carefully wastes time.
+  </Accordion>
+  <Accordion title="Provide the exact code to the AI, not a paraphrase">
+    Paraphrasing the code — "I have a string with backticks and a newline" — introduces ambiguity. Pasting the exact four lines of the `header` variable let AI identify the specific Python pattern that produces the broken byte sequence.
+  </Accordion>
+  <Accordion title="Test message formatting in isolation before wiring it into a pipeline">
+    The formatting error only surfaced when the full pipeline ran. A simple unit test that called the Telegram API with a hardcoded test message would have caught it immediately. Add a formatting smoke test to any bot project before connecting it to real data.
+  </Accordion>
+</AccordionGroup>
+
+## Prompt patterns used
+
+The most effective prompt in this session followed the [problem-solving framework](/principles/problem-solving):
+
+```text
+Goal: Send a formatted Telegram message with a code block listing filenames.
+Current state: Sending fails with "Can't parse entities: can't find end of the entity starting at byte offset 168".
+Gap: The Markdown parser cannot find the closing fence.
+Standard: The message sends successfully with the filenames rendered in a monospace code block.
+
+Here is the exact header code:
+[paste of the four-line header variable]
+
+What is wrong and how do I fix it?
+```
+
+This single prompt produced the correct diagnosis and fix in one pass.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Problem solving" icon="magnifying-glass" href="/principles/problem-solving">
+    The Goal–Current–Gap–Standard framework used to frame this bug.
+  </Card>
+  <Card title="Playbook: debugging" icon="bug" href="/playbook/debugging">
+    Debugging techniques for AI-assisted development.
+  </Card>
+  <Card title="Prompt engineering" icon="wand-magic-sparkles" href="/principles/prompt-engineering">
+    How to structure prompts to get precise, actionable answers from AI.
+  </Card>
+  <Card title="Case studies overview" icon="folder-open" href="/case-studies/overview">
+    All real-project case studies in the Vibe Coding documentation.
+  </Card>
+</CardGroup>

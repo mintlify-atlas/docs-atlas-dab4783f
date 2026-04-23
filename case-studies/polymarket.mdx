@@ -1,0 +1,165 @@
+---
+title: "Polymarket data analysis: AI-driven development"
+description: "How a prediction market data pipeline was built with Python, the Polymarket API, and ASCII chart visualization using glue coding and AI pair programming."
+icon: "chart-bar"
+---
+
+Polymarket is a prediction market platform where users trade YES and NO shares on future events. Because prices are set by global trading behavior rather than a fixed formula, they deviate from their theoretical equilibrium (YES + NO = $1.00), creating patterns that are worth analyzing. This case study documents the construction of a data analysis pipeline that fetches Polymarket prices, detects these deviations, and renders them as ASCII visualizations — built using the glue-coding methodology with AI as the primary development partner.
+
+## What was built
+
+A Python data pipeline that:
+
+- Fetches live and historical market data from the Polymarket API
+- Detects price dislocations where YES + NO ≠ $1.00
+- Renders market price history as ASCII K-line (candlestick) charts in the terminal
+- Generates structured analysis reports with identified arbitrage patterns
+
+The pipeline was intentionally kept minimal: no database, no web UI, no heavy framework. The constraint was to assemble the result from the fewest possible custom components, reusing proven libraries wherever they existed.
+
+## Understanding the market mechanics
+
+Before writing code, the team used AI to build a shared understanding of how Polymarket prices work. This analysis became a core reference document for the project.
+
+### The theoretical equilibrium
+
+In Polymarket, every event has exactly two outcomes. At settlement:
+
+- Each YES share resolves to $1.00 if the event occurs
+- Each NO share resolves to $1.00 if the event does not occur
+
+The system's inherent constraint is:
+
+```text
+YES price + NO price = $1.00
+```
+
+### Why prices deviate
+
+Real market prices are set by global trading behavior, not a formula. Three recurring patterns produce deviations:
+
+<CardGroup cols={1}>
+  <Card title="Emotional buying" icon="fire">
+    Breaking news causes traders to buy YES impulsively. YES jumps to $0.60; NO stays at $0.35. The total is $0.95 — $0.05 below equilibrium. Buying both sides costs $0.95 and returns $1.00 at settlement regardless of the outcome.
+  </Card>
+  <Card title="Global time lag" icon="clock">
+    News breaks during US trading hours. US traders buy YES aggressively (to $0.70); Asian markets are offline and NO stays at $0.33. Total: $1.03. Selling both sides yields $1.03 now against a $1.00 settlement obligation.
+  </Card>
+  <Card title="Low liquidity impact" icon="chart-bar">
+    A large sell order in a thinly traded market drives YES from $0.50 to $0.45 without affecting NO at $0.50. Total drops to $0.95. A bot that detects this can buy the depressed pair and capture the spread at settlement.
+  </Card>
+</CardGroup>
+
+This analysis directly shaped the data pipeline's detection logic: the primary signal to track is the deviation of (YES + NO) from $1.00 across time.
+
+## Architecture
+
+The pipeline follows the [glue-coding principle](/principles/glue-coding): each layer has a single responsibility and relies on proven libraries rather than custom implementations.
+
+```text
+Polymarket API
+      │
+      ▼
+  Fetcher (requests / httpx)
+      │
+      ▼
+  Price model (dataclasses)
+      │
+      ├──► Dislocation detector
+      │         │
+      │         └──► Analysis report (text)
+      │
+      └──► ASCII K-line renderer
+                │
+                └──► Terminal output / saved file
+```
+
+### Key design decisions
+
+**No database in the first iteration.** Price history is fetched fresh each run and stored in memory. This kept the development cycle fast and avoided schema design decisions before the analysis logic was proven.
+
+**ASCII visualization over a charting library.** The project used a prompt-driven ASCII visualization approach, producing K-line charts as plain text. This means the output works in any terminal, in log files, and in Telegram messages without encoding issues.
+
+**Problem description template for every bug.** Before asking AI for help with any issue, the team filled in a structured problem description template covering background, technical context, problem manifestation, entities involved, and expected versus actual behavior. This eliminated back-and-forth clarification.
+
+## Prompts and skills used
+
+### Glue-coding requirement prompt
+
+The project used an explicit glue-coding system prompt for every code generation session:
+
+> You are a senior software architect. This project uses a strong dependency reuse model. Minimize custom logic. Reuse existing libraries completely. Only write the minimal orchestration and adaptation code. The evaluation criterion is not how much code you write but whether you correctly stand on top of mature systems.
+
+This prompt consistently produced code that imported and composed existing library functions rather than reimplementing them.
+
+### ASCII visualization prompt
+
+For chart rendering, the team used a structured prompt requesting system-architecture analysis followed by ASCII sequence and architecture diagrams. The prompt required:
+
+- Pure ASCII characters only (no Mermaid, PlantUML, or image formats)
+- Based on actual repository structure, not assumptions
+- Saved as separate `.txt` files in the project root
+
+### Completeness check prompt
+
+After each development session, a completeness-check prompt verified that:
+
+- All imported modules were real and participated in execution
+- No mock or stub implementations remained
+- No "placeholder, implement later" code existed
+
+## Lessons learned
+
+<AccordionGroup>
+  <Accordion title="Define the domain model first">
+    The most valuable AI conversation in the project was the one that explained Polymarket's YES/NO mechanics and the mathematical equilibrium. Having that as a shared reference document meant every subsequent code discussion started from correct premises. AI-generated code was more accurate because the prompts could reference the domain model explicitly.
+  </Accordion>
+  <Accordion title="ASCII output is underrated">
+    The decision to use ASCII charts rather than a plotting library removed an entire class of dependency, rendering, and encoding problems. The output worked everywhere — terminal, log file, Telegram message — without any format conversion. For analysis pipelines where the consumer is a developer or a bot, ASCII is often the right choice.
+  </Accordion>
+  <Accordion title="The problem description template prevents scope creep">
+    Filling in the structured problem description (background, technical context, problem, entities, references, intent) before asking AI for help consistently produced more targeted responses. It also prevented AI from proposing solutions that addressed the wrong problem.
+  </Accordion>
+  <Accordion title="Completeness checks catch integration bugs early">
+    Running the completeness-check prompt after each session caught cases where the generated code imported a library function but never called it, or where a "detect dislocations" function existed but was not wired into the main pipeline. These bugs are invisible to static analysis but obvious to a completeness review.
+  </Accordion>
+</AccordionGroup>
+
+## Sample output format
+
+The pipeline produces ASCII K-line output in this style:
+
+```text
+[polymarket] BTC price > 100k by 2025-12-31
+YES: 0.72 | NO: 0.30 | Spread: +0.02
+
+High  ┤  ─┐
+      │   │  ─┐
+Open  ┤   │  ─┤
+      │   │   │
+Close ┤   └─  │
+Low   ┤       └─
+
+[Dislocation detected: sum = 1.02, deviation = +0.02]
+```
+
+<Note>
+  The cross-platform arbitrage pattern (buying NO on Polymarket while buying YES on Kalshi for the same event) requires API access to both platforms simultaneously. The pipeline described here covers single-platform analysis. Cross-platform arbitrage requires extending the fetcher layer to a second API client.
+</Note>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Glue coding" icon="link" href="/principles/glue-coding">
+    The principle this entire project was built on: reuse mature components, write only the minimal connecting code.
+  </Card>
+  <Card title="Prompt engineering" icon="wand-magic-sparkles" href="/principles/prompt-engineering">
+    How the structured prompts used in this project were composed.
+  </Card>
+  <Card title="PostgreSQL skill" icon="database" href="/skills/postgresql">
+    For extending the pipeline with a persistent price history store.
+  </Card>
+  <Card title="TimescaleDB skill" icon="chart-line" href="/skills/timescaledb">
+    For storing and querying time-series price data with automatic partitioning.
+  </Card>
+</CardGroup>

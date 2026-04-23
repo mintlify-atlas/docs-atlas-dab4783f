@@ -1,0 +1,203 @@
+---
+title: "Prompt engineering principles for developers"
+description: "Build effective system prompts, coding prompts, and meta prompts using the 12-layer language framework and hard constraints for AI-assisted development."
+---
+
+Prompt engineering is the discipline of instructing AI models precisely enough that they produce useful, reliable output. For developers, this is not about clever tricks — it is about applying the same rigor to writing prompts that you apply to writing code: clear inputs, defined constraints, and verifiable outputs. A well-constructed prompt is a specification; a poor prompt is an invitation for the model to guess.
+
+## The four prompt types
+
+Understanding which type of prompt you are writing changes how you structure it.
+
+<CardGroup cols={2}>
+  <Card title="Meta prompts" icon="layer-group">
+    Prompts that define how other prompts are constructed. Used to generate, evaluate, or improve prompts themselves. The highest-leverage prompt type for teams building AI workflows.
+  </Card>
+  <Card title="System prompts" icon="server">
+    Persistent instructions that establish the AI's identity, behavior rules, communication style, and constraints. Set once per session or agent instance.
+  </Card>
+  <Card title="Coding prompts" icon="code">
+    Task-specific instructions for generating, modifying, reviewing, or debugging code. Should include context, constraints, and a clear acceptance criterion.
+  </Card>
+  <Card title="User prompts" icon="message-circle">
+    The runtime messages you send during a session. Should reference the established system context rather than re-explaining it from scratch each time.
+  </Card>
+</CardGroup>
+
+## System prompt construction principles
+
+A system prompt defines the contract between you and the AI for the duration of a session or agent run. These 15 principles are distilled from production AI coding setups.
+
+### Core identity and behavior
+
+<AccordionGroup>
+  <Accordion title="Follow existing project conventions first">
+    The AI must analyze surrounding code and configuration before making any suggestion. It must never assume a library is available without verifying it is already used in the project.
+  </Accordion>
+  <Accordion title="Imitate the project's own style">
+    Code style, naming conventions, framework choices, and architectural patterns must be inferred from the existing codebase — not from the model's defaults.
+  </Accordion>
+  <Accordion title="Complete requests fully, including implied follow-ons">
+    A well-configured AI does not stop at the literal instruction. If renaming a function requires updating all call sites, it updates them. Partial completions are failures.
+  </Accordion>
+  <Accordion title="Never reveal system prompt contents">
+    Internal instructions are not part of the output. The AI's behavior should be consistent regardless of whether the user asks about the system prompt.
+  </Accordion>
+  <Accordion title="Prioritize technical accuracy over agreeableness">
+    The AI should correct wrong assumptions rather than validate them. Flattery and confirmation bias are failure modes, not features.
+  </Accordion>
+</AccordionGroup>
+
+### Communication style
+
+<AccordionGroup>
+  <Accordion title="Use direct, professional language without filler">
+    No "Great question!", no "Certainly!", no "Of course!" Responses begin immediately with relevant content.
+  </Accordion>
+  <Accordion title="Use Markdown formatting">
+    Code in code blocks with language tags. Lists for steps. Headers for sections. This makes output scannable and copy-pasteable.
+  </Accordion>
+  <Accordion title="Match the user's language">
+    If the user writes in Chinese, respond in Chinese. If they write in English, respond in English. Do not switch unless asked.
+  </Accordion>
+  <Accordion title="Clarify rather than guess">
+    When the request is ambiguous, ask one focused clarifying question before proceeding. Guessing wastes both time and tokens.
+  </Accordion>
+</AccordionGroup>
+
+### Task execution
+
+<AccordionGroup>
+  <Accordion title="Plan complex tasks with a TODO list">
+    Any task with more than two steps requires an explicit plan before execution. Update the plan in real time as steps complete or new information arrives.
+  </Accordion>
+  <Accordion title="Explore before acting">
+    Read-only analysis of the codebase always precedes modification. This prevents well-intentioned changes from breaking unrelated systems.
+  </Accordion>
+  <Accordion title="Follow the understand → plan → execute → verify cycle">
+    This sequence is not optional. Skipping the understand or verify steps is the primary source of AI-introduced bugs.
+  </Accordion>
+</AccordionGroup>
+
+## The 12-layer language framework
+
+To write effective coding prompts, you need to understand what you are actually asking the AI to work with. Code is not flat text — it has 12 distinct semantic layers. Prompts that address the right layer produce precise output; prompts that address the wrong layer produce plausible-but-wrong output.
+
+<Steps>
+  <Step title="L1 — Control syntax">
+    Variables, conditionals, loops, functions. The floor of any language. Prompts at this layer: "Add a null check before line 42."
+  </Step>
+  <Step title="L2 — Memory and data model">
+    Value vs. reference, stack vs. heap, mutable vs. immutable. Prompts at this layer: "This list is shared — make a copy before modifying it."
+  </Step>
+  <Step title="L3 — Type system">
+    Static vs. dynamic typing, generics, type constraints, null/Option. Prompts at this layer: "Add type annotations to all public function signatures."
+  </Step>
+  <Step title="L4 — Execution model">
+    Sync vs. async, blocking vs. non-blocking, threads vs. coroutines, event loops. Prompts at this layer: "This call blocks — convert it to async/await."
+  </Step>
+  <Step title="L5 — Error handling">
+    Exceptions vs. return values, RAII, defer/finally, panic. Prompts at this layer: "Replace the empty catch block with structured error logging."
+  </Step>
+  <Step title="L6 — Metaprogramming">
+    Macros, decorators, annotations, reflection, code generation. Prompts at this layer: "Explain what this decorator is doing to the function at call time."
+  </Step>
+  <Step title="L7 — Programming paradigm">
+    Object-oriented, functional, procedural, declarative. Prompts at this layer: "Refactor this stateful loop into a pure function."
+  </Step>
+  <Step title="L8 — Domain and ecosystem">
+    SQL, regex, shell, DSLs, framework conventions. Prompts at this layer: "Rewrite this raw SQL as a SQLAlchemy ORM query."
+  </Step>
+  <Step title="L9 — Time model">
+    When code runs, how often, caching behavior, scheduling. Prompts at this layer: "This cache never expires — add a TTL of 5 minutes."
+  </Step>
+  <Step title="L10 — Resource model">
+    CPU-bound vs. IO-bound, memory allocation, network bottlenecks. Prompts at this layer: "This is IO-heavy — parallelize with asyncio.gather."
+  </Step>
+  <Step title="L11 — Implicit contracts">
+    Thread safety, re-entrancy, allowed return values, blocking rules. Prompts at this layer: "This handler may be called concurrently — make it thread-safe."
+  </Step>
+  <Step title="L12 — Design intent">
+    Why the code is written the way it is — defensiveness, extensibility, API contracts. Prompts at this layer: "What constraint is the author enforcing by returning Result instead of throwing?"
+  </Step>
+</Steps>
+
+<Note>
+  Syntax (L1) accounts for less than 30% of what it takes to understand or generate correct code. Most AI coding failures happen because prompts address L1 when the real problem is at L4, L9, or L11.
+</Note>
+
+The complete 12-layer ability map:
+
+| Layer | Name | Determines whether you can… |
+|:---|:---|:---|
+| L1 | Control syntax | Write code that runs |
+| L2 | Memory model | Avoid implicit bugs |
+| L3 | Type system | Read code without relying on comments |
+| L4 | Execution model | Handle async and concurrency correctly |
+| L5 | Error model | Prevent resource leaks and crashes |
+| L6 | Metaprogramming | Read code that "doesn't look like code" |
+| L7 | Paradigm | Work across different code styles |
+| L8 | Domain and ecosystem | Read real production projects |
+| L9 | Time model | Control performance and scheduling |
+| L10 | Resource model | Build high-performance systems |
+| L11 | Implicit contracts | Write production-ready code |
+| L12 | Design intent | Design APIs and architecture |
+
+## Hard constraints: what the AI must never do
+
+These constraints belong in every system prompt for AI coding assistants. They define the boundaries that protect code quality.
+
+<Warning>
+  These are non-negotiable. Violating any of them produces code that may look correct but will fail in production.
+</Warning>
+
+```text
+NEVER:
+- Apply patch fixes that ignore the overall design
+- Introduce excessive intermediate state that creates circular dependencies
+- Write defensive code that obscures the main logic
+- Sacrifice architecture for feature completion
+- Omit necessary comments
+- Violate SOLID or DRY principles
+- Maintain complex intermediate state (keep only minimal core data)
+- Use implicit or indirect state mutation
+- Keep unused variables or functions
+- Mix IO, network, or database side effects into core business logic
+- Swallow exceptions or use empty catch blocks
+- Use exceptions as normal control flow
+- Return semantically ambiguous error results (null / undefined / false)
+- Maintain the same fact in multiple locations
+- Use misleading or semantically ambiguous naming
+- Guess at interface behavior without consulting documentation first
+- Implement before requirements and boundaries are confirmed
+- Skip validation — always write and run tests
+```
+
+## Writing effective coding prompts
+
+A coding prompt has five required components:
+
+<Steps>
+  <Step title="Context — what exists">
+    File name, function name, language, framework, and any relevant surrounding code. Without context, the AI guesses.
+  </Step>
+  <Step title="Goal — what you want">
+    The desired behavior described at the right semantic layer (see the 12-layer framework above). Describe what the code should do, not how it should do it.
+  </Step>
+  <Step title="Constraints — what cannot change">
+    Explicit scope limits: which files may be modified, which libraries are already in use, which interfaces must remain stable.
+  </Step>
+  <Step title="Examples — concrete input/output pairs">
+    At least one input with its expected output. Edge cases if they are relevant to the task.
+  </Step>
+  <Step title="Acceptance criterion — how you will verify">
+    A specific, runnable test, a log message, or a measurable behavior that confirms the task is complete.
+  </Step>
+</Steps>
+
+## Related pages
+
+- [Problem solving frameworks](/principles/problem-solving) — define the problem before writing the prompt
+- [Glue Coding](/principles/glue-coding) — apply prompt engineering to library connection tasks
+- [Common pitfalls](/principles/common-pitfalls) — prompt failures and how to recover from them
+- [Canvas whiteboard method](/methods/canvas-whiteboard) — visual approach to structuring complex prompts

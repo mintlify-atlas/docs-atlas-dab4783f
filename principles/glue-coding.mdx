@@ -1,0 +1,176 @@
+---
+title: "Glue Coding: compose libraries, don't reinvent"
+description: "Glue Coding eliminates AI hallucination, complexity explosion, and high barriers by connecting mature libraries instead of writing from scratch."
+---
+
+Glue Coding is the next evolutionary step beyond Vibe Coding. Where traditional Vibe Coding asks AI to generate code from scratch, Glue Coding asks AI to connect existing, battle-tested libraries into a working system. The insight is simple: the best code is code that already exists in production somewhere else, maintained by a community, and free for you to use.
+
+> **If you can copy, don't write. If you can connect, don't create.**
+
+## The paradigm shift
+
+Traditional software development required you to design architecture, write logic, handle edge cases, and reinvent solutions that someone else had already perfected. Glue Coding reframes the developer's job entirely:
+
+```text
+Traditional development:  Human writes code
+Vibe Coding:              AI writes code, human reviews code
+Glue Coding:              AI connects code, human reviews connections
+```
+
+The shift from **creation** to **connection** is what makes Glue Coding viable at scale. AI models are extremely good at reading two library APIs and generating the 50 lines of glue code that joins them. They are considerably less reliable when asked to invent novel logic from scratch.
+
+## The three problems it solves
+
+Vibe Coding has three well-known failure modes. Glue Coding addresses each one directly.
+
+<CardGroup cols={1}>
+  <Card title="AI hallucination — eliminated" icon="brain">
+    When AI generates code from scratch, it invents APIs that don't exist, references functions with the wrong signatures, and produces logic that looks correct but fails at runtime. Glue Coding removes this risk entirely: the AI only reads real documentation and writes the minimal connection layer between verified libraries. There is nothing to hallucinate.
+  </Card>
+  <Card title="Complexity explosion — transferred to the community" icon="chart-line">
+    As projects grow, AI-generated code becomes increasingly difficult to reason about. Bugs multiply, context windows overflow, and the system becomes unmaintainable. Glue Coding transfers that complexity to open-source maintainers who have spent years hardening their code across thousands of issues, hundreds of contributors, and real production environments.
+  </Card>
+  <Card title="High barrier — eliminated" icon="door-open">
+    Traditional Vibe Coding still requires enough programming intuition to evaluate whether AI output is correct. Glue Coding reduces this to a single question: does the output of library A match the input format of library B? You do not need to understand the internals of either library.
+  </Card>
+</CardGroup>
+
+## Architecture philosophy
+
+Every Glue Coding project has the same three-layer structure:
+
+```text
+┌─────────────────────────────────────────┐
+│              Your business need          │
+└─────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────┐
+│           AI glue layer                  │
+│   "Connect these components together"    │
+└─────────────────────────────────────────┘
+                     │
+        ┌────────────┼────────────┐
+        ▼            ▼            ▼
+  ┌──────────┐ ┌──────────┐ ┌──────────┐
+  │ Module A │ │ Module B │ │ Module C │
+  │ (10k+ ★) │ │(prod-ready│ │(official │
+  │          │ │ library)  │ │   SDK)   │
+  └──────────┘ └──────────┘ └──────────┘
+```
+
+- **Entities**: mature open-source projects, official SDKs, production-grade libraries
+- **Links**: AI-generated glue code — data transformation and interface adaptation
+- **Function**: the business outcome you described
+
+The open-source libraries are treated as **immutable black boxes**. You never fork them, never copy their internals, and never rewrite what they already do.
+
+## Core principles
+
+<AccordionGroup>
+  <Accordion title="Never reimplement what already exists">
+    Any functionality with a mature open-source implementation must be sourced from that implementation. Writing your own version is not an option, regardless of how simple it seems.
+  </Accordion>
+  <Accordion title="Copy-paste is a legitimate engineering strategy">
+    Using community-validated code directly is not laziness — it is sound engineering judgment. The community has already done the debugging, the edge-case handling, and the performance work.
+  </Accordion>
+  <Accordion title="Stand on giants, don't try to become one">
+    Your competitive advantage is the combination of libraries and the domain insight you apply. It is not in re-implementing data structures or protocol parsers.
+  </Accordion>
+  <Accordion title="Treat all dependencies as immutable">
+    Open-source libraries are loaded as black boxes. Modifications to third-party code invalidate the guarantees that made the library worth using in the first place.
+  </Accordion>
+  <Accordion title="Minimize custom code">
+    Your glue layer should only handle: composition, invocation, encapsulation, and adaptation. Everything else belongs in a library someone else maintains.
+  </Accordion>
+</AccordionGroup>
+
+## Practical workflow
+
+<Steps>
+  <Step title="Define your goal clearly">
+    Write a one-sentence description of what the system needs to do. Example: "Receive a Telegram message, process it with GPT, and store the result in PostgreSQL."
+  </Step>
+  <Step title="Find the wheels">
+    Ask AI to identify mature libraries that cover each part of your goal. Evaluate by GitHub stars, recent commits, open issue activity, and license.
+
+    Use GitHub Topics to find candidates:
+
+    ```text
+    https://github.com/topics/telegram-bot
+    https://github.com/topics/data-analysis
+    https://github.com/topics/ai-agent
+    ```
+
+    Prompt template for finding libraries:
+
+    ```text
+    I need to implement [your goal]. Please:
+    1. Identify the technical domains this touches
+    2. Recommend GitHub Topics for each domain
+    3. Suggest the top 2-3 libraries per domain with reasons
+    ```
+  </Step>
+  <Step title="Understand the interfaces">
+    Feed the official documentation for each library to AI and ask it to summarize: what are the inputs, what are the outputs, what authentication or configuration is required?
+  </Step>
+  <Step title="Describe the connections">
+    Tell AI exactly how data flows between libraries. Example: "Module A produces a JSON object with fields `text` and `timestamp`. Module B expects a string. Write the adapter."
+  </Step>
+  <Step title="Validate and iterate">
+    Run the system. If it fails, paste the complete error into AI and continue. The debugging loop stays tight because the logic is minimal — you are only debugging connection code, not reimplemented algorithms.
+  </Step>
+</Steps>
+
+## Glue Coding vs. traditional development
+
+| Dimension | Traditional development | Glue Coding |
+|:---|:---|:---|
+| How features are built | Written from scratch | Composed from existing libraries |
+| Code volume | High | Minimal |
+| Success rate | Variable | High — battle-tested components |
+| Development speed | Slow | Fast |
+| Maintenance burden | Carried by your team | Distributed to library maintainers |
+| Primary skill required | Deep implementation knowledge | Interface and composition reasoning |
+
+## A concrete example
+
+**Goal**: real-time Polymarket data analysis pushed to Telegram.
+
+**Traditional approach**: write a scraper, write analysis logic, write a Telegram bot — approximately 3,000 lines of code and two weeks of work.
+
+**Glue Coding approach**:
+
+```python
+# Three mature libraries, ~50 lines of glue code, ~2 hours of work
+
+# polymarket-py  — official SDK for market data
+# pandas         — battle-tested data analysis
+# python-telegram-bot — production Telegram integration
+
+from py_clob_client.client import ClobClient
+import pandas as pd
+from telegram.ext import Application
+
+# Glue layer: connect the three libraries
+```
+
+<Tip>
+  The case study is documented in full at [Polymarket case study](/case-studies/polymarket).
+</Tip>
+
+## Typical use cases
+
+- Rapid prototyping
+- Small teams building large systems
+- AI applications and model inference pipelines
+- Data processing workflows
+- Internal tooling
+- System integration projects
+
+## Related pages
+
+- [Prompt engineering principles](/principles/prompt-engineering) — how to write effective prompts for glue layer generation
+- [Project architecture](/principles/project-architecture) — how to organize your `services/`, `libs/`, and `glue/` directories
+- [Common pitfalls](/principles/common-pitfalls) — what breaks when you violate Glue Coding constraints
+- [Polymarket case study](/case-studies/polymarket) — a complete Glue Coding project from start to finish

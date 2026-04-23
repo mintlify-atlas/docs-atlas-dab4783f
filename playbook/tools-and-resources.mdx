@@ -1,0 +1,204 @@
+---
+title: "AI coding tools, models, and resources guide"
+description: "A comprehensive guide to IDEs, terminals, AI models, development tools, prompt libraries, and communities for Vibe Coding practitioners."
+---
+
+Choosing the right tools shapes how effectively you can work with AI. This guide organizes the Vibe Coding ecosystem into categories — IDEs and terminals, AI models, development utilities, prompt and skill resources, and communities — so you can find the right tool for each part of your workflow. Model performance tiers are included to help you match model capability to task complexity.
+
+## IDEs and terminals
+
+<CardGroup cols={2}>
+  <Card title="Visual Studio Code" icon="code" href="https://code.visualstudio.com/">
+    A powerful IDE suited for code reading and manual editing. The **Local History** plugin is especially useful for lightweight version tracking within a session.
+  </Card>
+  <Card title="Cursor" icon="arrow-pointer" href="https://cursor.com/">
+    An AI-native IDE built on VS Code. Well-established in the developer community with integrated AI editing and chat.
+  </Card>
+  <Card title="Warp" icon="terminal" href="https://www.warp.dev/">
+    A modern terminal with built-in AI assistance. Improves command-line operations and error diagnosis without leaving the terminal.
+  </Card>
+  <Card title="Neovim + LazyVim" icon="keyboard" href="https://github.com/neovim/neovim">
+    High-performance modal editor with a rich plugin ecosystem. [LazyVim](https://github.com/LazyVim/LazyVim) provides a pre-configured setup with LSP, completion, and debugging out of the box.
+  </Card>
+</CardGroup>
+
+<Tip>
+Run Claude Code or Codex CLI inside the VS Code integrated terminal. You get full diff views and context access without leaving your workspace.
+</Tip>
+
+## AI models
+
+The following models are actively used in the Vibe Coding community. Each has different strengths, access methods, and cost profiles.
+
+<CardGroup cols={2}>
+  <Card title="Claude Opus 4.6" icon="asterisk" href="https://claude.ai/new">
+    The primary model for complex Vibe Coding work. Available via Claude Code CLI, IDE plugins, and the web interface. Strong at multi-file reasoning, long-context tasks, and following structured instructions.
+  </Card>
+  <Card title="GPT Codex (xhigh)" icon="brain" href="https://chatgpt.com/codex/">
+    Well-suited for large projects and complex logic. Available via Codex CLI. Use `--yolo` flag to skip confirmation prompts in automated workflows.
+  </Card>
+  <Card title="Gemini CLI" icon="google" href="https://geminicli.com/">
+    Free access to Gemini models. Good for running scripts, organizing documentation, and exploring ideas. Also available through [AI Studio](https://aistudio.google.com/prompts/new_chat) and [Gemini Enterprise](https://cloud.google.com/gemini-enterprise).
+  </Card>
+  <Card title="Kiro" icon="tool" href="https://kiro.dev/">
+    Provides free access to Claude Opus 4.6 with a client and CLI tool. A useful option when managing subscription costs.
+  </Card>
+  <Card title="GLM" icon="flag" href="https://bigmodel.cn/">
+    Large language model from Zhipu AI. Supported natively in OpenCode CLI configuration for free-tier usage.
+  </Card>
+  <Card title="Qwen" icon="flag" href="https://qwenlm.github.io/qwen-code-docs/zh/cli/">
+    Alibaba's AI model with a CLI tool that includes a free usage quota. Suitable for general coding tasks.
+  </Card>
+  <Card title="Kimi K2.5" icon="globe" href="https://www.kimi.com/">
+    A Chinese-developed AI model suitable for general tasks. Good alternative when other models are unavailable.
+  </Card>
+  <Card title="Droid" icon="terminal" href="https://factory.ai/news/terminal-bench">
+    Provides CLI access to Claude Opus 4.6 and other models. Designed for terminal-first workflows.
+  </Card>
+</CardGroup>
+
+## Model performance tiers
+
+Use this reference to match model capability to task complexity. Not all tasks need the highest-tier model — using a lighter model for simple work preserves quota for the tasks that matter.
+
+<AccordionGroup>
+  <Accordion title="Top tier: complex tasks">
+    **Recommended: gpt-5.2-xhigh (Codex)**
+
+    Use the top-tier model for:
+    - Multi-file architectural changes
+    - Debugging complex, cross-module issues
+    - Generating implementation plans from scratch
+    - Tasks where a single wrong output costs significant time to fix
+
+    The community recommendation is to use top-tier models exclusively for complex tasks to ensure the best results and efficiency.
+  </Accordion>
+  <Accordion title="Mid tier: standard development">
+    **Claude Opus 4.6, Gemini 3.0 Pro**
+
+    Use mid-tier models for:
+    - Single-file feature implementation
+    - Writing or reviewing unit tests
+    - Code explanation and documentation
+    - Most day-to-day Vibe Coding steps
+  </Accordion>
+  <Accordion title="Light tier: small tasks">
+    **GPT Codex (medium), Gemini Nano**
+
+    Use light models for:
+    - Small fixes and single-function changes
+    - Formatting and renaming
+    - Simple script generation
+    - Tasks you could verify in under a minute
+  </Accordion>
+  <Accordion title="Specialist models">
+    | Task | Model |
+    |---|---|
+    | Marketing copy | Opus 4.1 |
+    | 2D sprite generation | ChatGPT + Nano Banana |
+    | Music generation | Suno |
+    | Sound effects | ElevenLabs |
+    | Video generation | Sora 2 |
+  </Accordion>
+</AccordionGroup>
+
+## Development and utility tools
+
+<CardGroup cols={2}>
+  <Card title="Augment" icon="bolt" href="https://app.augmentcode.com/">
+    Provides a powerful context engine and prompt optimization. Useful for feeding large codebases to AI with structured context.
+  </Card>
+  <Card title="Windsurf" icon="wind" href="https://windsurf.com/">
+    AI development tool with free quota for new users. Alternative IDE experience to Cursor.
+  </Card>
+  <Card title="Ollama" icon="server" href="https://ollama.com/">
+    Local model management tool. Pull and run open-source models via the command line. Useful for offline work or when you need to avoid sending code to external APIs.
+  </Card>
+  <Card title="tmux" icon="rectangle-terminal" href="https://github.com/tmux/tmux">
+    Terminal multiplexer for session persistence, split panes, and background tasks. Essential for AI swarm workflows and remote development.
+  </Card>
+  <Card title="DBeaver" icon="database" href="https://dbeaver.io/">
+    Universal database management client. Supports multiple database types with a full-featured GUI. Useful for inspecting state during debugging.
+  </Card>
+  <Card title="Mermaid Chart" icon="diagram-project" href="https://www.mermaidchart.com/">
+    Converts text descriptions into architecture diagrams, sequence diagrams, and flowcharts. Use it to visualize your Memory Bank architecture.
+  </Card>
+  <Card title="NotebookLM" icon="book-open" href="https://notebooklm.google.com/">
+    AI-powered tool for interpreting documents, generating audio summaries, and creating mind maps. Useful for processing research and planning materials.
+  </Card>
+  <Card title="Zread" icon="search" href="https://zread.ai/">
+    AI-driven GitHub repository reading tool. Helps you quickly understand a project's codebase before forking or integrating it.
+  </Card>
+</CardGroup>
+
+## Prompt libraries and skill resources
+
+<CardGroup cols={2}>
+  <Card title="Prompt library (Google Sheets)" icon="table" href="https://docs.google.com/spreadsheets/d/1Ifk_dLF25ULSxcfGem1hXzJsi7_RBUNAki8SBCuvkJA/edit?gid=1254297203#gid=1254297203">
+    The community prompt library: system prompts, coding prompts, meta-prompts, and user prompts. Directly copyable and organized by category.
+  </Card>
+  <Card title="prompts-library converter" icon="arrows-rotate" href="https://github.com/tukuaiai/vibe-coding-cn">
+    The `assets/repo/prompts-library/` tool converts prompts between Excel and Markdown formats. Supports Excel → Docs, Docs → Excel, and Docs → JSONL conversions.
+  </Card>
+  <Card title="chat-vault" icon="archive" href="https://github.com/tukuaiai/vibe-coding-cn">
+    Saves AI chat history from Codex, Kiro, Gemini, and Claude CLI sessions. Useful for replaying a generation process when debugging or building on past sessions.
+  </Card>
+  <Card title="Skills library" icon="bolt-lightning" href="/skills/overview">
+    Reusable AI skills for specific tasks: SOP generation, Canvas whiteboard development, PostgreSQL, TimescaleDB, tmux autopilot, and more. See the [skills overview](/skills/overview).
+  </Card>
+  <Card title="Third-party system prompts" icon="book" href="https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools">
+    A reference library of system prompts from major AI tools. Useful for understanding how other tools constrain AI behavior.
+  </Card>
+  <Card title="Skills maker (Skill Seekers)" icon="wrench" href="https://github.com/yusufkaraaslan/Skill_Seekers">
+    Generates custom skills from requirements. Use it to build reusable AI capabilities tailored to your project's specific needs.
+  </Card>
+</CardGroup>
+
+## Virtual environment and Python tooling
+
+For Python projects, always use a virtual environment. It isolates dependencies per project and makes environment setup reproducible:
+
+```bash
+# Create a virtual environment
+python3 -m venv .venv
+
+# Activate it
+source .venv/bin/activate  # macOS/Linux
+.venv\Scripts\activate     # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+<Note>
+VS Code automatically detects `.venv` and activates it in new terminals. Add `.venv/` to your `.gitignore` so the environment is never committed to the repository.
+</Note>
+
+## Communities
+
+<CardGroup cols={2}>
+  <Card title="Telegram community group" icon="paper-plane" href="https://t.me/glue_coding">
+    The primary Chinese-language Vibe Coding discussion group. Active community for sharing techniques, asking questions, and finding collaborators.
+  </Card>
+  <Card title="Telegram channel" icon="rss" href="https://t.me/tradecat_ai_channel">
+    Project updates and news from the vibe-coding-cn team.
+  </Card>
+</CardGroup>
+
+## External tutorials
+
+<CardGroup cols={2}>
+  <Card title="二哥的Java进阶之路" icon="graduation-cap" href="https://javabetter.cn/">
+    Detailed configuration tutorials for development tools. Useful reference for setting up IDEs and build tooling.
+  </Card>
+  <Card title="AI-readable repo: Zread" icon="robot" href="https://zread.ai/tukuaiai/vibe-coding-cn/1-overview">
+    An AI-interpreted version of the vibe-coding-cn repository. Use it to ask questions about the project structure and content in natural language.
+  </Card>
+</CardGroup>
+
+## Related pages
+
+- [The complete Vibe Coding development workflow](/playbook/workflow) — how to use these tools together in a structured pipeline
+- [IDE setup](/getting-started/ide-setup) — configuring VS Code for Vibe Coding
+- [OpenCode CLI](/getting-started/opencode-cli) — free AI CLI supporting GLM and MiniMax models
+- [Skills overview](/skills/overview) — reusable AI skill library

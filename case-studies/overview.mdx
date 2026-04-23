@@ -1,0 +1,73 @@
+---
+title: "Real project case studies with AI pair programming"
+description: "Real projects built with Vibe Coding: a Telegram bot, Polymarket data analysis, and a Bazi K-line engine — each with full dev story and prompt patterns."
+icon: "folder-open"
+---
+
+Theory is only as good as the projects it produces. The case studies in this section document real software built using the Vibe Coding methodology — with AI as an active pair programmer at every stage, from initial architecture to debugging production bugs. Each case study traces the actual development decisions, the prompts and skills used, the problems encountered, and what was learned.
+
+Reading these case studies gives you something that methodology pages cannot: evidence that the approach works under real constraints, with real data, and with the kind of messy edge cases that do not appear in tutorials.
+
+## What you learn from each case study
+
+Every case study covers the same core questions:
+
+- What was built, and why?
+- What technologies were chosen, and how did AI help evaluate trade-offs?
+- Where did the development get stuck, and how was it unblocked?
+- What prompt patterns and skills proved most useful?
+- What would you do differently on the next project?
+
+## Projects
+
+<CardGroup cols={2}>
+  <Card title="Telegram bot" icon="robot" href="/case-studies/telegram-bot">
+    A Python-based Telegram bot that sends formatted reports. The case study covers a real Markdown parsing bug — a one-line error in how code fences were constructed — and how AI identified the root cause and fixed it precisely.
+  </Card>
+  <Card title="Polymarket data analysis" icon="chart-bar" href="/case-studies/polymarket">
+    A prediction market data pipeline that fetches, analyzes, and visualizes Polymarket prices using Python and ASCII chart rendering. Includes an analysis of arbitrage mechanics and the glue-coding pattern used to assemble it.
+  </Card>
+  <Card title="Fate Engine" icon="dice" href="/case-studies/fate-engine">
+    A life K-line (人生K线) system that applies Chinese astrology (Bazi) scoring to generate a candlestick-style life chart. Built with a strong dependency reuse model, integrating external Bazi calculation libraries through thin orchestration code.
+  </Card>
+  <Card title="OpenClaw" icon="claws" href="/case-studies/overview">
+    Architecture and ecosystem research for the OpenClaw project. See the Skills section for related infrastructure patterns.
+  </Card>
+</CardGroup>
+
+## Methodology in action
+
+Each project demonstrates a different facet of the Vibe Coding approach:
+
+| Project | Primary technique illustrated |
+|---------|-------------------------------|
+| Telegram bot | Debugging with precise problem framing; Markdown parsing edge cases |
+| Polymarket | Glue coding; ASCII visualization; data pipeline composition |
+| Fate Engine | Strong dependency reuse; LLM-driven JSON output; external library integration |
+
+<Note>
+  These case studies document work done by real developers using AI as a pair programmer, not AI working autonomously. The human remains the decision-maker; AI accelerates the implementation and helps identify blind spots.
+</Note>
+
+## How to read a case study
+
+You do not need to read them in order. If you are building a bot, start with the Telegram case study. If you are doing data analysis, go to Polymarket. If you are integrating external libraries, the Fate Engine study is the most relevant.
+
+Each case study is structured to be useful even if you are not building the same type of project — the prompt patterns, debugging approaches, and architectural decisions transfer broadly.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Glue coding" icon="link" href="/principles/glue-coding">
+    The principle behind minimizing custom code by reusing mature libraries — central to both Polymarket and Fate Engine.
+  </Card>
+  <Card title="Problem solving" icon="magnifying-glass" href="/principles/problem-solving">
+    The Goal–Current–Gap–Standard framework used to frame bugs like the Telegram Markdown issue.
+  </Card>
+  <Card title="Skills overview" icon="layer-group" href="/skills/overview">
+    The skill modules used across these projects: PostgreSQL, TimescaleDB, tmux Autopilot.
+  </Card>
+  <Card title="Playbook: debugging" icon="bug" href="/playbook/debugging">
+    Debugging techniques that appear repeatedly across the case studies.
+  </Card>
+</CardGroup>

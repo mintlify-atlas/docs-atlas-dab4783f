@@ -1,0 +1,210 @@
+---
+title: "Headless AI CLI: run Gemini, Claude, Codex non-interactively"
+description: "Run Gemini CLI, Claude Code, and Codex CLI non-interactively — batch translation, code review, and multi-model pipelines in shell scripts."
+keywords: ["headless CLI", "gemini CLI", "claude code", "codex CLI", "non-interactive", "automation", "batch processing"]
+---
+
+Headless mode lets you call AI CLI tools — Gemini CLI, Claude Code, and Codex CLI — without human interaction. You pipe text in via stdin, receive output on stdout, and compose the results into scripts, cron jobs, or multi-model orchestration pipelines. This is the foundation for AI-powered batch processing and unattended automation workflows.
+
+## When to use it
+
+Trigger this skill when any of the following applies:
+
+- You need to batch-process files: translation, code review, format conversion, or summarization
+- You need to call an AI model from inside a shell script or CI pipeline
+- You need to chain multiple models together (model A generates → model B reviews)
+- You need unattended AI task execution with no human confirmation required
+
+<Note>
+  Headless mode is not suitable for interactive conversations, real-time feedback loops, or any task that requires human judgment during execution. YOLO mode in particular bypasses all safety confirmations — use it only in environments you fully control.
+</Note>
+
+## Prerequisites
+
+Before running any headless command, verify:
+
+1. The target CLI tool is installed (`gemini --version`, `claude --version`, `codex --version`)
+2. Authentication is complete (API key, OAuth, or account login depending on the tool)
+3. Network proxy is configured if required (see the proxy setup section below)
+
+## Mode comparison
+
+<CardGroup cols={3}>
+  <Card title="YOLO mode" icon="triangle-exclamation">
+    Full permissions, skips all confirmations. Fastest, highest risk. Use only in controlled environments.
+  </Card>
+  <Card title="Full-Auto mode" icon="circle-play">
+    Sandboxed write access, approves only on failure. Recommended for most automation.
+  </Card>
+  <Card title="Safe mode" icon="shield-check">
+    Headless but tool-restricted. No file system writes. Best for read-only pipelines.
+  </Card>
+</CardGroup>
+
+## YOLO mode (full permissions, skip confirmations)
+
+Use when you need maximum automation and you trust the execution environment completely.
+
+**Codex CLI:**
+```bash
+# --yolo is an alias for --dangerously-bypass-approvals-and-sandbox
+alias c='codex --enable web_search_request -m gpt-5.3-codex-max \
+  -c model_reasoning_effort="high" --yolo'
+```
+
+**Claude Code:**
+```bash
+alias cc='claude --dangerously-skip-permissions'
+```
+
+**Gemini CLI:**
+```bash
+alias g='gemini --yolo'
+# or equivalently:
+alias g='gemini --approval-mode yolo'
+```
+
+## Full-Auto mode (recommended for automation)
+
+Sandboxed writes with approval only on failure — the best balance of safety and automation.
+
+**Codex CLI:**
+```bash
+codex --full-auto "Your prompt here"
+```
+
+**Gemini CLI:**
+```bash
+gemini --approval-mode auto_edit "Your prompt here"
+```
+
+## Safe mode (headless, tool-restricted)
+
+No file system writes. Suitable for read-only processing and safe pipelines.
+
+**Gemini CLI (disable all tool calls):**
+```bash
+cat input.md | gemini -p "prompt" --output-format text --allowed-tools '' > output.md
+```
+
+**Claude Code (print mode):**
+```bash
+cat input.md | claude -p "prompt" --output-format text > output.md
+```
+
+**Codex CLI (non-interactive execution):**
+```bash
+codex exec "prompt" --json -o result.txt
+```
+
+## Key flags reference
+
+| Feature | Gemini CLI | Claude Code | Codex CLI |
+|:---|:---|:---|:---|
+| YOLO mode | `--yolo` | `--dangerously-skip-permissions` | `--yolo` |
+| Specify model | `-m <model>` | `--model <model>` | `-m <model>` |
+| Non-interactive | `-p "prompt"` | `-p "prompt"` | `exec "prompt"` |
+| Output format | `--output-format text` | `--output-format text` | `--json` |
+| Disable tools | `--allowed-tools ''` | `--disallowedTools` | N/A |
+| Continue conversation | N/A | `-c` / `--continue` | `resume --last` |
+
+## Common command templates
+
+### Proxy setup (if required)
+
+```bash
+export http_proxy=http://127.0.0.1:9910
+export https_proxy=http://127.0.0.1:9910
+```
+
+### Batch translation
+
+```bash
+export http_proxy=http://127.0.0.1:9910
+export https_proxy=http://127.0.0.1:9910
+
+cat zh.md | gemini -p "Translate to English. Keep code blocks and links unchanged." \
+  --output-format text --allowed-tools '' > en.md
+```
+
+### Code review
+
+```bash
+cat code.py | claude --dangerously-skip-permissions -p \
+  "Review this code for bugs and security issues. Output a markdown report." > review.md
+```
+
+### Multi-model pipeline (generate then review)
+
+```bash
+# Model A generates → Model B reviews
+cat spec.md | gemini -p "Generate Python code from this spec" --output-format text | \
+  claude -p "Review and improve this code for production readiness" --output-format text > result.md
+```
+
+## Examples
+
+### Example 1: batch translate a documentation folder
+
+**Input:** Chinese Markdown files in `docs/`
+
+```bash
+export http_proxy=http://127.0.0.1:9910
+export https_proxy=http://127.0.0.1:9910
+
+for f in docs/*.md; do
+  cat "$f" | timeout 120 gemini -p \
+    "Translate to English. Keep code fences, links, and frontmatter unchanged." \
+    --output-format text --allowed-tools '' 2>/dev/null > "en_$(basename $f)"
+done
+```
+
+**Expected output:** Translated English files alongside the originals, with all code and link formatting preserved.
+
+### Example 2: code review pipeline
+
+**Input:** Python source files in `src/`
+
+```bash
+cat src/*.py | claude --dangerously-skip-permissions -p \
+  "Review for: 1) Bugs 2) Security vulnerabilities 3) Performance issues.
+   Output a markdown table with severity, file, line, and description." > review.md
+```
+
+**Expected output:** `review.md` containing a structured markdown table categorized by severity.
+
+### Example 3: multi-model answer comparison
+
+**Input:** A technical question
+
+```bash
+question="How do you implement rate limiting in Python without external libraries?"
+
+echo "$question" | gemini -p "$question" --output-format text > gemini_answer.md
+echo "$question" | claude -p "$question" --output-format text > claude_answer.md
+
+# Compare the two answers side by side
+diff gemini_answer.md claude_answer.md
+```
+
+**Expected output:** Two answer files and a diff showing where Gemini and Claude diverge, useful for validating approaches or detecting model biases.
+
+## Security considerations
+
+<Warning>
+  YOLO mode bypasses all safety confirmations. Never use it on systems where the AI could accidentally delete files, run destructive commands, or access credentials. Prefer Full-Auto mode for automated pipelines that need write access.
+</Warning>
+
+- Keep authentication credentials out of command history (use environment variables or credential managers)
+- Set `--allowed-tools ''` in Gemini CLI or `--disallowedTools` in Claude Code whenever you only need text output
+- Use `timeout` to prevent runaway processes in batch loops
+- Log all headless executions to a file for audit purposes
+
+## References
+
+- `references/gemini-cli.md` — complete Gemini CLI parameter reference
+- `references/claude-cli.md` — complete Claude Code CLI parameter reference
+- `references/codex-cli.md` — complete Codex CLI parameter reference
+- [Claude Code skill and guide](/skills/claude-code-guide) — interactive Claude Code usage
+- [AI Swarm methodology](/methods/ai-swarm) — orchestrating multiple headless agents together
+- [Getting started: OpenCode CLI](/getting-started/opencode-cli) — OpenCode CLI setup

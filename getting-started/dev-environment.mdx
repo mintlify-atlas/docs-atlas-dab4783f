@@ -1,0 +1,184 @@
+---
+title: "Set up your AI coding development environment"
+description: "Install the core tools needed for Vibe Coding — Node.js, Git, Python, tmux, VS Code, and a free AI CLI — on Windows, macOS, or Linux."
+---
+
+A Vibe Coding environment needs four things: a reliable terminal, version control, a code editor, and at least one AI CLI tool you can invoke from the command line. This guide gives you a prompt-driven path to set all of that up, plus post-installation shortcuts that make switching between AI tools instant.
+
+<Note>
+  Complete [network setup](/getting-started/network-setup) before starting here. All package downloads require a working connection to GitHub and npm.
+</Note>
+
+## What you will install
+
+<CardGroup cols={2}>
+  <Card title="Node.js (via nvm)" icon="node">
+    Required by most AI CLI tools, including Gemini CLI and OpenCode.
+  </Card>
+  <Card title="Git" icon="code-branch">
+    Version control for every project you build with AI.
+  </Card>
+  <Card title="Python 3" icon="python">
+    Used by data tools, automation scripts, and many AI SDK examples.
+  </Card>
+  <Card title="tmux" icon="rectangle-terminal">
+    Terminal multiplexer — lets you run multiple AI agents in parallel sessions.
+  </Card>
+  <Card title="VS Code" icon="code">
+    The recommended editor. Lightweight, extensible, and first-class AI tool support.
+  </Card>
+  <Card title="Free AI CLI" icon="microchip-ai">
+    Gemini CLI, Codex, or OpenCode — at least one zero-cost AI terminal tool.
+  </Card>
+</CardGroup>
+
+## AI-guided setup (recommended)
+
+Copy the prompt for your operating system and paste it into any AI chat. The AI will install each tool in order, verify each step succeeded, and explain what it is doing.
+
+<AccordionGroup>
+  <Accordion title="Windows — WSL2 + Linux (recommended)">
+    WSL2 gives you a full Linux environment inside Windows. This is the most compatible setup for AI tooling.
+
+    ```text
+    You are a patient development environment setup assistant. I am a complete beginner using Windows, and I need you to guide me step by step through setting up a Linux development environment via WSL2.
+
+    Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+    1. Install WSL2 (Windows Subsystem for Linux)
+    2. Install Ubuntu inside WSL2
+    3. Configure the Ubuntu base environment (update the system)
+    4. Install nvm and Node.js
+    5. Install Gemini CLI or another free AI CLI tool
+    6. Install base dev tools (git, python, build-essential, tmux)
+    7. Configure Git user information
+    8. Install VS Code and configure the WSL extension
+    9. Verify all tools are working
+
+    Requirements:
+    - Give me the exact command for each step and tell me where to run it (PowerShell or Ubuntu terminal)
+    - Explain each command in plain language
+    - If I get an error, help me diagnose and fix it
+    - Ask me whether each step succeeded before continuing
+
+    Start with step 1.
+    ```
+  </Accordion>
+
+  <Accordion title="Windows — native terminal (no WSL)">
+    Use this if you prefer to stay in the Windows native environment without installing Linux.
+
+    ```text
+    You are a patient development environment setup assistant. I am a complete beginner using Windows, and I need you to guide me step by step through setting up a native Windows development environment (no WSL).
+
+    Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+    1. Install Windows Terminal (if not already installed)
+    2. Install Node.js via the official installer or winget
+    3. Install Git for Windows
+    4. Install Python
+    5. Install Gemini CLI or another free AI CLI tool
+    6. Configure Git user information
+    7. Install VS Code
+    8. Verify all tools are working
+
+    Requirements:
+    - Give me the exact command or steps for each item
+    - Explain each step in plain language
+    - If I get an error, help me diagnose and fix it
+    - Ask me whether each step succeeded before continuing
+
+    Start with step 1.
+    ```
+  </Accordion>
+
+  <Accordion title="macOS">
+    ```text
+    You are a patient development environment setup assistant. I am a complete beginner using macOS, and I need you to guide me step by step through setting up a Vibe Coding development environment from scratch.
+
+    Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+    1. Install Homebrew package manager
+    2. Install Node.js via Homebrew
+    3. Install Gemini CLI or another free AI CLI tool
+    4. Install base dev tools (git, python, tmux)
+    5. Configure Git user information
+    6. Install VS Code or Neovim
+    7. Verify all tools are working
+
+    Requirements:
+    - Give me the exact command for each step
+    - Explain each command in plain language
+    - If I get an error, help me diagnose and fix it
+    - Ask me whether each step succeeded before continuing
+
+    Start with step 1.
+    ```
+  </Accordion>
+
+  <Accordion title="Linux (Ubuntu / Debian)">
+    ```text
+    You are a patient development environment setup assistant. I am a complete beginner using Linux (Ubuntu/Debian), and I need you to guide me step by step through setting up a Vibe Coding development environment from scratch.
+
+    Please guide me in this order, one step at a time. Wait for me to confirm success before moving on:
+
+    1. Update the system and install base dependencies (curl, build-essential)
+    2. Install nvm and Node.js
+    3. Install Gemini CLI or another free AI CLI tool
+    4. Install dev tools (git, python, tmux)
+    5. Configure Git user information
+    6. Install VS Code or Neovim
+    7. Verify all tools are working
+
+    Requirements:
+    - Give me the exact command for each step
+    - Explain each command in plain language
+    - If I get an error, help me diagnose and fix it
+    - Ask me whether each step succeeded before continuing
+
+    Start with step 1.
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Post-installation: CLI shortcuts
+
+Once your tools are installed, add these aliases to `~/.bashrc` (or `~/.zshrc` on macOS) so you can launch any AI tool with a single letter.
+
+```bash
+# c — Codex (GPT, high-reasoning, no confirmation prompts)
+alias c='codex --enable web_search_request -m gpt-5.3-codex-max -c model_reasoning_effort="high" --dangerously-bypass-approvals-and-sandbox'
+
+# cc — Claude Code (all permissions granted)
+alias cc='claude --dangerously-skip-permissions'
+
+# g — Gemini CLI (YOLO mode, no confirmation prompts)
+alias g='gemini --yolo'
+```
+
+Apply the changes immediately:
+
+```bash
+source ~/.bashrc
+```
+
+<Warning>
+  The `--dangerously-bypass-approvals-and-sandbox` and `--dangerously-skip-permissions` flags grant the AI full permission to read, write, and execute without asking. Only use these in isolated project directories, never in your home directory or on a shared machine.
+</Warning>
+
+## Verify your setup
+
+Run the following to confirm each tool is installed and on your PATH:
+
+```bash
+node --version    # v20.x.x or later
+git --version     # git version 2.x.x
+python3 --version # Python 3.x.x
+tmux -V           # tmux 3.x
+code --version    # VS Code version (if installed)
+gemini --version  # or: opencode --version
+```
+
+## Next step
+
+With your environment in place, continue to [configure VS Code](/getting-started/ide-setup) for AI pair programming.

@@ -1,0 +1,199 @@
+---
+title: "Canvas Dev skill: AI architecture whiteboard"
+description: "Canvas whiteboard as the single source of truth: the AI Architecture Director reads whiteboard JSON and generates insightful architecture diagrams."
+keywords: ["canvas-dev", "architecture whiteboard", "obsidian canvas", "AI architecture", "whiteboard-driven development"]
+---
+
+The Canvas Dev skill turns an Obsidian Canvas whiteboard into the single source of truth for your project architecture. Code becomes a serialized form of the whiteboard — not the other way around. You design on the whiteboard; the AI Architecture Director reads the whiteboard JSON and generates, refactors, or reviews code from it, without needing to parse natural-language descriptions.
+
+## The core idea
+
+Traditional development creates a hidden bottleneck: code exists in files, architecture lives in people's heads, and AI has to reconstruct both from ambiguous descriptions. Canvas Dev breaks that loop:
+
+```text
+Traditional: Code → verbal communication → mental model → code gets out of control
+
+Canvas Dev:  Code ⇄ Whiteboard ⇄ AI ⇄ Human   (whiteboard is the single source of truth)
+```
+
+| Pain point | Canvas Dev solution |
+|:---|:---|
+| AI can't understand project structure | AI reads the whiteboard JSON directly — architecture is unambiguous |
+| Humans forget complex dependencies | Connection lines make "change one thing, see everything affected" visible at a glance |
+| Team collaboration relies on verbal explanation | Point at the whiteboard; new team members understand in 5 minutes |
+
+## When to use it
+
+Trigger this skill when any of the following applies:
+
+- You need to generate a project architecture whiteboard from existing code (code → whiteboard)
+- You need to generate code from a whiteboard you've designed (whiteboard → code)
+- You need whiteboard-driven code refactoring
+- You need to use a whiteboard to support a code review
+- You need to accelerate team collaboration with a shared visual artifact
+- You're taking over a legacy project and need to understand the architecture quickly
+
+<Note>
+  This skill is not for plain text documentation (use Markdown), flowcharts or sequence diagrams (use Mermaid), or static architecture diagrams that don't need two-way sync with code.
+</Note>
+
+## The AI Architecture Director role
+
+When you activate this skill, the AI operates as an Architecture Director with three design principles:
+
+1. **Insight over information volume** — the goal is not to list every file and connection, but to reveal the project's design philosophy, critical data flows, potential risks, and evolution trends
+2. **Cognitive load minimization** — the visual artifact should let you understand the most complex system structure with the least mental effort
+3. **Aesthetics and function in parallel** — a great architecture diagram is itself well-crafted: balanced layout, coherent color use, organization that serves clear communication
+
+## Five-phase execution
+
+<Steps>
+  <Step title="Global project perception and multi-dimensional feature extraction">
+    The AI performs semantic-level source code parsing (AST), builds a weighted dependency graph, analyzes engineering metadata (package.json, docker-compose.yml, CI/CD configs), and identifies architecture pattern fingerprints.
+  </Step>
+  <Step title="Adaptive abstraction granularity decision">
+    The AI evaluates information entropy to find the "entropy inflection point" — the level of abstraction that conveys the most insight without overwhelming the viewer. Architecture patterns guide the default granularity; user intent provides hints.
+  </Step>
+  <Step title="Component semantic analysis and relationship classification">
+    Each component's role is inferred from multiple factors (entry point, controller, service, data access, utility). Relationships and data flows are qualified: synchronous call, async message, event publish/subscribe, state change, side effect.
+  </Step>
+  <Step title="Heuristic layout and information visualization">
+    The AI applies adaptive topological layering (entry → business logic → data persistence), force-directed node placement, and information-driven visual encoding.
+  </Step>
+  <Step title="Output generation and quality optimization">
+    The AI runs iterative de-crossing and overlap-prevention algorithms, edge bundling, intelligent pruning, and cognitive path optimization before writing the final `.canvas` file.
+  </Step>
+</Steps>
+
+## Granularity levels
+
+| Level | Description | Best for |
+|:---|:---|:---|
+| D — System ecosystem | Each node is a complete application | Giant monorepos |
+| C — Macro service | Dozens of files aggregated into a single domain node | Complex microservices |
+| B — Class / core function | Key business logic classes as nodes | Medium projects |
+| A — File level | Each source file is one node | Beginners (recommended default) |
+| F — Function / method | Deep drill-down showing internal call relationships | Hotspot analysis |
+
+## Node text template
+
+Each node the AI generates follows this template:
+
+```markdown
+**{ComponentName}**
+`{file path or aggregate scope}`
+
+**Core responsibility**: {AI-generated one-sentence function description}
+
+**Key interactions**:
+- **Calls**: {most-depended-on component}
+- **Used by**: {core business module that depends on this most}
+
+**Complexity**: {Low/Medium/High/Critical}
+**Potential risk**: {⚠️ Circular dependency or 📈 Technical debt}
+```
+
+## Delivery format
+
+After the AI completes the analysis, it reports:
+
+```text
+✓ AI Architecture Insight Report generated: {project-root/architecture.canvas}
+  ├─ Architecture identified: {highest-confidence pattern} (confidence: {score})
+  ├─ Insight granularity: {chosen level}
+  ├─ Core components: {node count}
+  └─ Key relationships: {connection count}
+```
+
+## 15-step complete workflow
+
+<Steps>
+  <Step title="Understand the core principle">
+    The whiteboard is the single source of truth. Code is its serialized form.
+  </Step>
+  <Step title="Prepare the tool environment">
+    Install Obsidian and configure your AI assistant with this skill loaded.
+  </Step>
+  <Step title="Generate the initial architecture whiteboard">
+    Provide the AI with your project code path. The AI generates a `.canvas` file automatically.
+  </Step>
+  <Step title="Open the .canvas file in Obsidian">
+    Review the modules, API call relationships, and dependency connections.
+  </Step>
+  <Step title="Refine the whiteboard">
+    Drag nodes to improve layout. Add missing implicit dependencies. Annotate with comment nodes.
+  </Step>
+  <Step title="Establish code–whiteboard sync">
+    New file → new node. New import → new connection line. Keep them in sync from this point.
+  </Step>
+  <Step title="Drive new development from the whiteboard">
+    Draw the new module box and its call relationships. The AI generates the code to match.
+  </Step>
+  <Step title="Drive refactoring from the whiteboard">
+    Delete or reroute dependency lines. The AI refactors the code to match.
+  </Step>
+  <Step title="Support code review with the whiteboard">
+    Spot anomalous connections (front-end connecting directly to database, circular dependencies).
+  </Step>
+  <Step title="Accelerate team onboarding">
+    New team members understand the global structure in 1 minute. Use the whiteboard for requirements scoping.
+  </Step>
+  <Step title="Maintain whiteboard–code consistency">
+    Check before every PR/MR. When they diverge, fix the whiteboard first.
+  </Step>
+  <Step title="Extend to other use cases">
+    Annotate performance hotspots. Trace data flows for security audits.
+  </Step>
+  <Step title="Confirm project type">
+    Monolith, microservices, or frontend/backend split — this affects default granularity.
+  </Step>
+  <Step title="Choose initial granularity">
+    File level (A) for beginners. Service level (C) for complex projects.
+  </Step>
+  <Step title="Iterate continuously">
+    Review weekly. Explore CI/CD integration as the workflow matures.
+  </Step>
+</Steps>
+
+## Rules and constraints
+
+- **MUST:** The Canvas whiteboard is the single source of truth. Insight over information volume. Minimize cognitive load.
+- **SHOULD:** Humans handle architecture design (dragging modules on the whiteboard). AI handles implementation details (generating code from connection lines). Use the adaptive granularity system.
+- **NEVER:** Generate "information garbage" that lists every file with no insight. Let the whiteboard and code diverge for extended periods. Include sensitive information in the whiteboard.
+
+## Examples
+
+### Example 1: assign a new feature to the AI
+
+**Traditional way:**
+> "Write a user registration feature that connects to the database, sends email, and logs the action."
+
+**Canvas Dev way:**
+1. Draw three boxes on the whiteboard: `RegisterAPI` → `Database` / `EmailService` / `Logger`
+2. Tell the AI: "Implement this diagram"
+3. The AI writes all files and call relationships correctly in one pass
+
+### Example 2: code review
+
+**Traditional way:** Read through code line by line until you lose the thread.
+
+**Canvas Dev way:**
+1. Look at the whiteboard: "Why is the front-end connecting directly to the database?"
+2. Drag the node to fix the architecture
+3. The AI automatically refactors the code to match
+
+### Example 3: taking over a legacy project
+
+**Traditional way:** Three days of reading code and you still don't understand it.
+
+**Canvas Dev way:**
+1. Run the AI Architecture Director → get an insightful architecture whiteboard in 1 minute
+2. Read the AI-generated component responsibility summaries and complexity ratings
+3. Draw the parts you want to change directly on the whiteboard; the AI locates the corresponding code
+
+## References
+
+- [Canvas whiteboard-driven development](/methods/canvas-whiteboard) — full methodology
+- [AI Swarm collaboration](/methods/ai-swarm) — multi-agent workflows that pair with Canvas Dev
+- `references/index.md` — local reference document navigation
+- [Obsidian Canvas official documentation](https://obsidian.md/canvas) — the underlying whiteboard format

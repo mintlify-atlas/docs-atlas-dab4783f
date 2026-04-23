@@ -1,0 +1,192 @@
+---
+title: "SOP Generator: turn resources into runnable SOPs"
+description: "Convert scattered notes, chat logs, requirements, and docs into structured, executable SOPs with control points and exception handling."
+keywords: ["SOP", "standard operating procedure", "workflow", "process documentation", "sop-generator"]
+---
+
+The SOP Generator skill converts fragmented resources — chat logs, requirements lists, README files, or domain notes — into executable, auditable, and reusable Standard Operating Procedure documents. Every generated SOP follows a unified structure with control points, exception handling, and records sections, so it can be run by someone who wasn't in the room when it was written.
+
+## When to use it
+
+Trigger this skill when any of the following applies:
+
+- You need to write an SOP, work instruction, operation procedure, or process specification
+- You have scattered records, chat logs, or requirement lists that need to be "turned into a process"
+- You need a structured document with explicit control points, exception handling, and record tables
+- You need to standardize how a repeatable task is performed across a team
+
+<Warning>
+  The SOP Generator does not replace mandatory compliance documents for legal, medical, or high-risk industrial processes. Those require specialist review. It also never invents internal organizational processes — missing information is always surfaced explicitly with follow-up questions.
+</Warning>
+
+## Required inputs
+
+If any of the three inputs below are missing, the skill asks you 1–3 targeted questions before generating anything:
+
+| Input | What it means |
+|:---|:---|
+| **Goal and scope** | What problem does the SOP solve? Who is it for, and in which situations does it apply? |
+| **Key deliverable** | What is the final output or result? How is success defined? |
+| **Resources and constraints** | What tools, system permissions, compliance requirements, time limits, or cost constraints apply? |
+
+## Input → output transformation
+
+The skill takes your raw material and applies a six-step process to produce a fully structured SOP:
+
+<Steps>
+  <Step title="Split task boundaries">
+    If the input contains two or more unrelated goals, objects, or systems, the skill splits them into separate SOPs. Otherwise it produces one document and declares the scope explicitly.
+  </Step>
+  <Step title="Extract the operation chain">
+    Break the goal into an "input → action → output" step sequence, with timing or thresholds for each step.
+  </Step>
+  <Step title="Mark control points">
+    Identify key parameters, quality thresholds, and safety risks that must be verified during execution.
+  </Step>
+  <Step title="Add exception handling">
+    Define what to do when steps deviate from the standard, and who to escalate to.
+  </Step>
+  <Step title="Produce structured output">
+    Generate the SOP using the unified template below.
+  </Step>
+  <Step title="Self-check quality">
+    Verify completeness, executability, and traceability before delivering.
+  </Step>
+</Steps>
+
+## Output structure
+
+Every generated SOP follows this canonical template:
+
+```text
+SOP Title / Document ID
+Version and Revision History
+Author / Reviewer / Approver
+
+1.  Purpose
+2.  Scope
+3.  Terms and Definitions
+4.  Roles and Responsibilities
+5.  Resources and Prerequisites
+6.  Standard Operating Procedure
+    6.1  Step 1 (Input / Action / Output / Duration)
+    6.2  Step 2 ...
+7.  Critical Control Points and Quality Standards
+8.  Safety and Risk Notes
+9.  Deviations and Escalation Paths
+10. Records and Forms
+11. References
+```
+
+## Quick reference patterns
+
+**Split-or-merge decision rule:**
+
+```text
+If the input contains ≥ 2 unrelated goals, objects, or systems → split into separate SOPs.
+Otherwise → one SOP, scope section declares applicability.
+```
+
+**Minimum viable SOP (MVP) structure:**
+
+```text
+Purpose + Scope + Resources + 3-7 Steps + Critical Control Points + Exception Handling + Records
+```
+
+**Step writing template:**
+
+```text
+Step N: In [system/location], use [tool] to perform [action].
+Input: [input]. Output: [output]. Time/threshold: [parameter].
+```
+
+**Missing information prompt:**
+
+```text
+Please provide: 1) Scope / applicable roles  2) Key deliverable and acceptance criteria  3) Required tools / system permissions
+```
+
+**Generate an SOP from the command line:**
+
+```bash
+python3 assets/skills/sop-generator/scripts/generate_sop.py \
+  --title "Project Deployment SOP" \
+  --doc-id "SOP-001" \
+  --version "v1.0" \
+  --output sop.md
+```
+
+**Generate a minimum viable SOP:**
+
+```bash
+python3 assets/skills/sop-generator/scripts/generate_sop.py \
+  --title "Inspection SOP" \
+  --mvp \
+  --output sop-mvp.md
+```
+
+## Authoring rules
+
+- **MUST:** Every step must be executable and reproducible. Critical control points must be quantified.
+- **SHOULD:** Each step includes explicit input, action, and output. Exception handling names a responsible party.
+- **NEVER:** Use "use your own judgment" or "as appropriate" as a substitute for a concrete step.
+
+## Examples
+
+### Example 1: generate SOPs from scattered notes (multi-topic split)
+
+**Input (excerpt):**
+- "Definition of SOP and standard structure"
+- "macOS screenshot to clipboard shortcut"
+- "OBS simultaneous streaming to two platforms"
+
+**Steps:**
+1. Identify three unrelated topics — split into three separate SOPs
+2. Apply the template to each; declare the applicable platform in the Scope section
+3. Flag missing information (OS version, software version) with explicit follow-up questions
+
+**Acceptance:** Three independent SOPs, each containing steps, control points, and exception handling.
+
+### Example 2: requirements-driven SOP
+
+**Input:**
+- Goal: use a specific divination framework as the sole method
+- Output: direction, intensity, confidence, cycle, raw symbol fields, interpretation
+- Constraint: no personal birth date data
+
+**Steps:**
+1. Define scope: applicable to objects, trading pairs, and commodities only
+2. Design the step chain: collect subject → generate reading → parse output → quantitative mapping
+3. Define control points: field consistency, quantitative scale
+
+**Acceptance:** SOP contains a field-definition table, quantitative formulas or ranges, and exception handling for insufficient data.
+
+### Example 3: SOP from a repository README (project trial run)
+
+**Input:**
+- GitHub repository: `BloopAI/vibe-kanban`
+- Goal: quickly try out the project locally
+
+**Steps:**
+1. Read the README → extract prerequisites
+2. Output a "Local Startup SOP": install dependencies, configure keys, start commands
+3. Mark control points: API key required, dependency manager version
+
+**Acceptance:** One "Local Run SOP" with the minimum steps needed and failure handling.
+
+## Available assets
+
+| Asset | Purpose |
+|:---|:---|
+| `assets/sop-template.md` | Full-length SOP template (all 11 sections) |
+| `assets/sop-mvp.md` | Minimum viable SOP template |
+| `assets/record-log-template.md` | Records and forms table template |
+| `scripts/generate_sop.py` | Command-line SOP generator (full and MVP modes) |
+
+## References
+
+- `references/index.md` — navigation and index
+- `references/sop-foundations.md` — SOP definition and core characteristics
+- `references/sop-structure.md` — universal structure and section descriptions
+- `references/writing-style.md` — executability and writing style standards
+- `references/examples.md` — full examples with original input fragments

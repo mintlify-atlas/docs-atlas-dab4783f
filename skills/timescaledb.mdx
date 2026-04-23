@@ -1,0 +1,199 @@
+---
+title: "TimescaleDB skill: time-series data with PostgreSQL"
+description: "Use the TimescaleDB skill for hypertables, continuous aggregates, compression, and high-performance time-series analytics built on PostgreSQL."
+icon: "chart-line"
+---
+
+TimescaleDB is a PostgreSQL extension that turns a standard relational database into a high-performance time-series store. Because it is built on PostgreSQL, you keep everything you already know — SQL, indexes, roles, extensions — and gain automatic partitioning by time, continuous background aggregation, and column-store compression on historical data. The TimescaleDB skill gives AI models structured reference material extracted from the official documentation so they can guide you through the extension's full feature set accurately.
+
+## When to use TimescaleDB instead of plain PostgreSQL
+
+Use TimescaleDB when your schema has a dominant time dimension and any of the following apply:
+
+- You are ingesting sensor readings, metrics, events, logs, or market prices at high volume
+- Queries nearly always filter or aggregate over a time range
+- You need to downsample raw data into coarser time buckets automatically (e.g., 1-minute tick data → 1-hour OHLCV bars)
+- You want transparent data compression on data older than a configurable threshold
+- You are performing time-series analysis that benefits from TimescaleDB's hyperfunctions (gap-filling, LTTB downsampling, percentile approximations)
+
+Stay with plain PostgreSQL when your data has no strong time dimension, when you primarily do arbitrary relational joins across many dimensions, or when your dataset is small enough that partitioning adds no benefit.
+
+## Key concepts
+
+<CardGroup cols={2}>
+  <Card title="Hypertables" icon="table">
+    A hypertable looks and behaves like a normal PostgreSQL table but is automatically partitioned into **chunks** by time (and optionally by a space dimension). You query it with standard SQL; TimescaleDB routes each query to the right chunks automatically.
+  </Card>
+  <Card title="Continuous aggregates" icon="arrows-rotate">
+    A materialized view that TimescaleDB refreshes incrementally in the background. Define it once with a `time_bucket()` expression and the database keeps it current without manual refresh jobs.
+  </Card>
+  <Card title="Compression" icon="file-zipper">
+    Column-store compression shrinks historical chunks by 90%+ in many workloads. You set a compression policy with a retention window; older chunks are compressed automatically while recent data stays uncompressed and fully writable.
+  </Card>
+  <Card title="Time buckets" icon="clock">
+    `time_bucket('1 hour', timestamp)` is the core aggregation primitive. It truncates timestamps to a fixed interval and is designed to work efficiently with continuous aggregates and group-by queries.
+  </Card>
+  <Card title="Hyperfunctions" icon="function">
+    Purpose-built analytics functions: `interpolated_average()` for gap-filling, `lttb()` for downsampling while preserving visual shape, `percentile_agg()` for approximate percentiles, and toolkit functions for financial OHLCV analysis.
+  </Card>
+  <Card title="Data retention" icon="clock-rotate-left">
+    Drop old chunks automatically with a retention policy, or move them to a cheaper tier. Combine with compression for a hot/warm/cold storage strategy entirely within PostgreSQL.
+  </Card>
+</CardGroup>
+
+## Reference files included
+
+| File | Contents |
+|------|----------|
+| `getting_started.md` | Installation, `CREATE EXTENSION timescaledb`, first hypertable |
+| `hypertables.md` | `create_hypertable()`, chunk sizing, space partitioning |
+| `continuous_aggregates.md` | `CREATE MATERIALIZED VIEW … WITH (timescaledb.continuous)`, refresh policies |
+| `compression.md` | `alter_table()` compression, `add_compression_policy()`, column order |
+| `time_buckets.md` | `time_bucket()` and `time_bucket_gapfill()` reference |
+| `hyperfunctions.md` | Toolkit analytics: LTTB, percentile, OHLCV, gap-fill |
+| `performance.md` | Chunk exclusion, indexing, `EXPLAIN` output interpretation |
+| `api.md` | Full function and procedure reference |
+| `installation.md` | Docker, Kubernetes, bare-metal, Rails setup |
+| `tutorials.md` | End-to-end worked examples |
+| `other.md` | Multi-node, data tiering, background workers |
+
+## Practical examples
+
+### Creating a hypertable
+
+```sql
+-- Create the base table first
+CREATE TABLE sensor_readings (
+    time        TIMESTAMPTZ NOT NULL,
+    sensor_id   INTEGER     NOT NULL,
+    temperature DOUBLE PRECISION,
+    humidity    DOUBLE PRECISION
+);
+
+-- Convert it to a hypertable partitioned by time
+SELECT create_hypertable('sensor_readings', 'time');
+```
+
+### Inserting and querying
+
+```sql
+-- Insert works exactly like a normal table
+INSERT INTO sensor_readings (time, sensor_id, temperature, humidity)
+VALUES (NOW(), 42, 23.5, 61.0);
+
+-- Query the last hour — TimescaleDB scans only the relevant chunks
+SELECT time, temperature
+FROM sensor_readings
+WHERE sensor_id = 42
+  AND time > NOW() - INTERVAL '1 hour'
+ORDER BY time DESC;
+```
+
+### Continuous aggregate for hourly averages
+
+```sql
+CREATE MATERIALIZED VIEW hourly_sensor_avg
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 hour', time) AS bucket,
+    sensor_id,
+    AVG(temperature) AS avg_temp,
+    AVG(humidity)    AS avg_humidity
+FROM sensor_readings
+GROUP BY bucket, sensor_id;
+
+-- Refresh policy: keep the view up to date automatically
+SELECT add_continuous_aggregate_policy(
+    'hourly_sensor_avg',
+    start_offset => INTERVAL '3 hours',
+    end_offset   => INTERVAL '1 hour',
+    schedule_interval => INTERVAL '1 hour'
+);
+```
+
+### Enabling compression
+
+```sql
+-- Enable column-store compression on the hypertable
+ALTER TABLE sensor_readings
+SET (timescaledb.compress,
+     timescaledb.compress_orderby = 'time DESC',
+     timescaledb.compress_segmentby = 'sensor_id');
+
+-- Automatically compress chunks older than 7 days
+SELECT add_compression_policy(
+    'sensor_readings',
+    INTERVAL '7 days'
+);
+```
+
+<Tip>
+  Choose `compress_segmentby` to match your most common `WHERE` filters and `compress_orderby` to match your sort order. These choices have a large impact on both compression ratio and query performance on compressed chunks.
+</Tip>
+
+### Kubernetes namespace setup (from skill examples)
+
+```shell
+kubectl create namespace timescale
+kubectl config set-context --current --namespace=timescale
+```
+
+### Rails integration
+
+```bash
+rails new my_app -d=postgresql
+cd my_app
+```
+
+```ruby
+# Gemfile
+gem 'timescaledb'
+```
+
+## Removing the extension
+
+```sql
+-- Remove TimescaleDB from a database (drops all hypertables and policies)
+DROP EXTENSION timescaledb;
+```
+
+<Warning>
+  Dropping the extension is destructive. All hypertables, continuous aggregates, compression policies, and retention policies will be removed. Back up your data before running this in any environment other than a development throwaway.
+</Warning>
+
+## Using the skill in practice
+
+<Steps>
+  <Step title="Confirm TimescaleDB is installed">
+    Run `SELECT default_version FROM pg_available_extensions WHERE name = 'timescaledb';` to check availability, then `CREATE EXTENSION IF NOT EXISTS timescaledb;` to enable it.
+  </Step>
+  <Step title="Invoke the skill">
+    Load the TimescaleDB skill in your AI tool. It makes all eleven reference files available for the AI to consult without you having to paste in documentation.
+  </Step>
+  <Step title="Design your hypertable schema">
+    Ask the AI to help you choose the right time column, partitioning interval, and whether a space partition on a high-cardinality dimension (like `sensor_id`) is warranted.
+  </Step>
+  <Step title="Define your aggregation strategy">
+    Decide which continuous aggregates you need. Discuss trade-offs between raw query flexibility and pre-aggregation cost with the AI consulting `continuous_aggregates.md`.
+  </Step>
+  <Step title="Set retention and compression policies">
+    Work with the AI to pick thresholds that match your query latency requirements and storage budget.
+  </Step>
+</Steps>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="PostgreSQL skill" icon="database" href="/skills/postgresql">
+    The foundation skill for all PostgreSQL SQL, schema design, and administration.
+  </Card>
+  <Card title="Skills overview" icon="layer-group" href="/skills/overview">
+    How the skill system works and when to load which skill.
+  </Card>
+  <Card title="Polymarket case study" icon="chart-bar" href="/case-studies/polymarket">
+    A real-world project that analyzed time-series prediction market data with Python.
+  </Card>
+  <Card title="Glue coding" icon="link" href="/principles/glue-coding">
+    How to wire TimescaleDB into your application without reimplementing what the extension already provides.
+  </Card>
+</CardGroup>

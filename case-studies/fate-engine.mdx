@@ -1,0 +1,201 @@
+---
+title: "Fate Engine: game logic built with AI collaboration"
+description: "Fate Engine generates life K-line candlestick charts from Bazi astrology using an LLM as a structured JSON generator and external libraries as black boxes."
+icon: "dice"
+---
+
+Fate Engine is a system that generates a "life K-line" (人生K线图) — a candlestick-style chart of a person's life trajectory based on Chinese astrology (Bazi, 八字). Instead of displaying a static personality reading, it produces a time-series data structure: one data point per lunar month from birth to the present, each with open/close/high/low scores and a reason field. The result is rendered as a financial-style chart that shows the rhythm of fortune over a lifetime.
+
+This case study documents how the system was built: not by implementing Bazi calculation logic from scratch, but by integrating external Bazi libraries as black boxes and using an LLM as the reasoning engine that converts astrological inputs into structured JSON chart data.
+
+## What was built
+
+A Python service that:
+
+- Accepts a user's birth date and time (producing the four pillars: year, month, day, hour in stem-branch notation)
+- Calls an LLM (Google Gemini via the `/chat/completions` endpoint) with a detailed system prompt that encodes the Bazi master's interpretive logic
+- Receives a structured JSON response containing scores for eight life dimensions plus a `chartPoints` array with OHLCV-style data for every lunar month
+- Renders the `chartPoints` array as a candlestick-style visualization
+
+The external Bazi calculation library (`sizi`, `datas`) handles the calendar mathematics — stem-branch notation, major luck periods (大运), and monthly pillar derivation. The project code only orchestrates: it passes inputs in, receives structured outputs, and hands them to the renderer.
+
+## The LLM system prompt
+
+The system prompt is the core of the Fate Engine. It defines the persona, the output format, and the evaluation rules that the LLM must follow. The actual prompt used in production:
+
+```text
+你是一位八字命理大师，精通加密货币市场周期。根据用户提供的四柱干支和大运信息，生成"人生K线图"数据和命理报告。
+
+核心规则:
+1. 年龄计算: 采用虚岁，从 1 岁开始。
+2. K线详批: 每年每月的 reason 字段必须控制在40-60字以内，简洁描述吉凶趋势即可。
+3. 评分机制: 所有维度给出 0-10 分。
+4. 数据起伏: 让评分根据真实的测算波动
+```
+
+The output schema the LLM must produce:
+
+```json
+{
+  "bazi": ["年柱", "月柱", "日柱", "时柱"],
+  "summary": "命理总评（100字）",
+  "summaryScore": 8,
+  "personality": "性格分析（80字）",
+  "personalityScore": 8,
+  "industry": "事业分析（80字）",
+  "industryScore": 7,
+  "fengShui": "风水建议（80字）",
+  "fengShuiScore": 8,
+  "wealth": "财富分析（80字）",
+  "wealthScore": 9,
+  "marriage": "婚姻分析（80字）",
+  "marriageScore": 6,
+  "health": "健康分析（60字）",
+  "healthScore": 5,
+  "family": "六亲分析（60字）",
+  "familyScore": 7,
+  "crypto": "币圈分析（60字）",
+  "cryptoScore": 8,
+  "chartPoints": [
+    {
+      "age": 1,
+      "year": 1990,
+      "daYun": "童限",
+      "ganZhi": "庚午",
+      "open": 50,
+      "close": 55,
+      "high": 60,
+      "low": 45,
+      "score": 55,
+      "reason": "开局平稳，家庭呵护"
+    }
+  ]
+}
+```
+
+The `chartPoints` array contains one entry per lunar month for the full lifespan. Each entry is a candlestick data point: `open`, `close`, `high`, and `low` are fortune scores (0–100); `reason` is a 40–60 character interpretive note.
+
+<Note>
+  The system prompt explicitly instructs the LLM not to output Markdown code blocks — the `geminiService` layer enforces this again as a second guard. The JSON response must be parseable directly without stripping fence characters.
+</Note>
+
+## Architecture: strong dependency reuse
+
+The Fate Engine was built under an explicit constraint: **the project's value is measured not by how much code it writes, but by how correctly it stands on top of mature systems**.
+
+```text
+User input (birth date/time)
+         │
+         ▼
+  External Bazi library
+  (sizi, datas — full source, not copied)
+         │
+         ▼
+  Four pillars + major luck periods
+         │
+         ▼
+  LLM system prompt (Bazi master persona)
+  + User message (pillar data)
+         │
+         ▼
+  Gemini /chat/completions
+         │
+         ▼
+  Structured JSON (chartPoints + dimension scores)
+         │
+         ▼
+  Chart renderer (K-line visualization)
+         │
+         ▼
+  Terminal output / report file
+```
+
+### Dependency integration rules enforced
+
+The glue-coding system prompt used throughout development set these explicit constraints:
+
+1. **Direct source path linking** — the Bazi library is referenced via `sys.path.append()` pointing to the full source repository, not a copy or stub
+2. **No re-implementation** — if `sizi.summarys()` provides a function, it is called; the function is not reimplemented inside the project
+3. **No placeholder logic** — every function that appears in the code must execute real logic; "implement later" stubs are forbidden
+4. **Minimal orchestration only** — the project code handles parameter passing, calling order, and output adaptation — nothing more
+
+```python
+import sys
+sys.path.append('/path/to/fate-engine/libs/external/github/sizi')
+sys.path.append('/path/to/fate-engine/libs/external/github/datas')
+
+from datas import *        # Complete data module — no subset wrappers
+from sizi import summarys  # Full algorithm — no simplified proxy
+```
+
+## AI collaboration approach
+
+<Steps>
+  <Step title="Architecture analysis first">
+    Before writing any code, AI produced an ASCII architecture diagram of the target system. This established the module boundaries and data flow that all subsequent code generation had to respect.
+  </Step>
+  <Step title="System prompt engineering">
+    The Bazi master system prompt was written iteratively with AI. The key tension was between richness of interpretation (longer `reason` fields) and JSON parsing reliability (strict character limits). The 40–60 character constraint on `reason` was arrived at through prompt testing.
+  </Step>
+  <Step title="Glue code generation under constraint">
+    Every code generation session started with the glue-coding system prompt. AI was explicitly forbidden from implementing Bazi calculation logic — it could only write the code that called the external library and passed results to the LLM.
+  </Step>
+  <Step title="Completeness verification">
+    After each session, a completeness-check prompt reviewed the generated code for mock implementations, unused imports, and placeholder functions.
+  </Step>
+  <Step title="Visualization iteration">
+    The ASCII K-line renderer was developed separately, starting from the `chartPoints` JSON schema. AI generated the renderer against the schema definition, not against actual LLM output, which kept the data contract explicit.
+  </Step>
+</Steps>
+
+## Lessons learned
+
+<AccordionGroup>
+  <Accordion title="LLMs as structured data generators">
+    The most non-obvious architectural decision was using an LLM not as a chat assistant but as a structured data generator. The system prompt defines a schema; the user message provides inputs; the response is JSON that feeds the next pipeline stage. This pattern is reusable across any domain that has complex interpretive logic but clear output structure.
+  </Accordion>
+  <Accordion title="Character limits in reason fields prevent hallucination">
+    The 40–60 character constraint on the `reason` field was added after testing showed that unconstrained generation produced verbose, repetitive text that added noise rather than signal. Short constraints force the LLM to be specific and prevent it from padding with generic phrases.
+  </Accordion>
+  <Accordion title="The external library is the source of truth — never copy it">
+    Copying the Bazi library source into the project and then modifying it would have broken the reuse model permanently. Referencing it via `sys.path` keeps the library as an immutable black box. When the library is updated, the project benefits automatically without merge conflicts.
+  </Accordion>
+  <Accordion title="ASCII visualization is a forcing function for clean data contracts">
+    Building the renderer against the JSON schema (rather than against ad-hoc data) forced the data contract to be explicit before any LLM output was available. This separation of schema definition from implementation is a practice worth carrying to any LLM-output-as-data project.
+  </Accordion>
+</AccordionGroup>
+
+## Sample chart output
+
+```text
+人生K线 — 庚午年 日柱 壬申
+大运: 童限 (1-10岁)
+
+High  │     ╻
+      │  ┃  ┃
+Open  ├──╊──╂──
+Close │  ┃  ┃
+      │  ╹  ╹
+Low   │
+
+  1990 1991 1992
+Score:  55   48   62
+Reason: 开局平稳，家庭呵护 | 土运压制，平淡渡过 | 木火相生，读书顺利
+```
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Glue coding" icon="link" href="/principles/glue-coding">
+    The core principle behind Fate Engine's architecture: reuse the library, write only the minimum orchestration.
+  </Card>
+  <Card title="Prompt engineering" icon="wand-magic-sparkles" href="/principles/prompt-engineering">
+    How the Bazi master system prompt was structured to produce reliable JSON output.
+  </Card>
+  <Card title="Polymarket case study" icon="chart-bar" href="/case-studies/polymarket">
+    Another data pipeline project using the same glue-coding pattern and ASCII visualization approach.
+  </Card>
+  <Card title="Case studies overview" icon="folder-open" href="/case-studies/overview">
+    All real-project case studies in the Vibe Coding documentation.
+  </Card>
+</CardGroup>

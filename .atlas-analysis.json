@@ -1,24 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "Vibe Coding CN",
+  "projectType": "general",
+  "projectName": "Vibe Coding CN",
+  "projectDescription": "A Chinese-language AI pair programming guide covering prompts, skills, workflows, and methodologies to help developers turn ideas into working code using LLMs.",
   "theme": "palm",
-  "colors": {
-    "primary": "#7c7c7c",
-    "light": "#0a0a0a",
-    "dark": "#c7c7c7"
-  },
-  "favicon": "https://media.brand.dev/ef8470ca-1f92-4a07-bc8f-26aa045ca387.png",
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/tukuaiai/vibe-coding-cn"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/tukuaiai/vibe-coding-cn"
-    }
-  },
+  "primaryColor": "#7c7c7c",
+  "lightColor": "#0a0a0a",
+  "darkColor": "#c7c7c7",
   "navigation": {
     "tabs": [
       {
@@ -109,5 +96,29 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "Comprehensive prompt library with hundreds of coding prompts",
+    "Reusable AI Skills for specialized domains (databases, trading, tools)",
+    "Glue Coding methodology — compose existing libraries instead of building from scratch",
+    "AI Swarm collaboration using tmux multi-agent coordination",
+    "Canvas whiteboard-driven development for visual architecture",
+    "Meta-methodology: self-optimizing generator/optimizer prompt loops",
+    "Step-by-step getting started guide for complete beginners",
+    "Real-world case studies with full development records",
+    "Philosophy and first-principles framework for AI-assisted development",
+    "OpenCode CLI configuration and usage guide"
+  ],
+  "publicApiSurface": [
+    "assets/skills/*/SKILL.md — loadable AI skill definitions",
+    "assets/prompts/ — prompt library index (linked to Google Sheets)",
+    "assets/workflow/auto-dev-loop/ — automated development loop workflow",
+    "assets/workflow/canvas-dev/ — canvas whiteboard workflow",
+    "assets/repo/prompts-library/main.py — Excel↔Markdown conversion CLI",
+    "assets/repo/chat-vault/ — AI chat record saving tool",
+    "Makefile targets: make lint, make help",
+    "assets/documents/principles/fundamentals/ — core methodology guides",
+    "assets/documents/guides/getting-started/ — beginner onboarding guides",
+    "assets/documents/guides/playbook/ — advanced playbook methods"
+  ]
 }

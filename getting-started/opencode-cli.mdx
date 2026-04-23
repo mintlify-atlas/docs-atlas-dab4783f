@@ -1,0 +1,240 @@
+---
+title: "OpenCode CLI: free AI terminal for developers"
+description: "Install and configure OpenCode — an open-source AI coding agent that runs in your terminal and supports 75+ models including GLM-4.7 and MiniMax M2.1 for free."
+---
+
+OpenCode is an open-source AI coding agent that runs in your terminal, as a desktop app, and as an IDE extension. It supports over 75 models and lets you connect free providers — no credit card required. This page covers installation, connecting a free model provider, core commands, and the recommended daily workflow.
+
+<CardGroup cols={2}>
+  <Card title="Official site" icon="globe" href="https://opencode.ai">
+    Documentation, changelog, and model compatibility list.
+  </Card>
+  <Card title="GitHub repository" icon="github" href="https://github.com/opencode-ai/opencode">
+    Source code, issues, and community discussions.
+  </Card>
+</CardGroup>
+
+## Install OpenCode
+
+Choose the installation method that matches your system:
+
+<Tabs>
+  <Tab title="curl (recommended)">
+    ```bash
+    curl -fsSL https://opencode.ai/install | bash
+    ```
+  </Tab>
+  <Tab title="npm">
+    ```bash
+    npm install -g opencode-ai
+    ```
+  </Tab>
+  <Tab title="Homebrew (macOS / Linux)">
+    ```bash
+    brew install anomalyco/tap/opencode
+    ```
+  </Tab>
+  <Tab title="Windows (Scoop)">
+    ```bash
+    scoop bucket add extras && scoop install extras/opencode
+    ```
+  </Tab>
+  <Tab title="Windows (Chocolatey)">
+    ```bash
+    choco install opencode
+    ```
+  </Tab>
+</Tabs>
+
+Verify the installation:
+
+```bash
+opencode --version
+```
+
+## Connect a free model provider
+
+OpenCode supports several providers with genuinely free tiers. Connect at least one before your first session.
+
+<Steps>
+  <Step title="Z.AI — GLM-4.7 (recommended)">
+    GLM-4.7 is a strong general-purpose model with a free tier and no credit card requirement.
+
+    1. Register at [Z.AI API console](https://z.ai/manage-apikey/apikey-list) and create an API key.
+    2. Start OpenCode and run `/connect`.
+    3. Search for **Z.AI** and enter your API key.
+    4. Run `/models` and select **GLM-4.7**.
+
+    ```bash
+    opencode
+    # Inside OpenCode:
+    /connect   # search Z.AI, enter API key
+    /models    # select GLM-4.7
+    ```
+  </Step>
+
+  <Step title="MiniMax — M2.1">
+    MiniMax M2.1 is a capable Chinese-built model with a free inference tier.
+
+    1. Register at [MiniMax API console](https://platform.minimax.io/login) and create an API key.
+    2. Run `/connect`, search for **MiniMax**, and enter your API key.
+    3. Run `/models` and select **M2.1**.
+  </Step>
+
+  <Step title="Hugging Face — multiple free models">
+    Hugging Face serverless inference gives you access to community models at no cost.
+
+    1. Create a [Hugging Face fine-grained token](https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained) with `inference.serverless.write` permission.
+    2. Run `/connect`, search for **Hugging Face**, and enter your token.
+    3. Run `/models` and select **Kimi-K2-Instruct** or **GLM-4.6**.
+  </Step>
+
+  <Step title="Local model via Ollama">
+    Run models entirely offline with no API key needed.
+
+    ```bash
+    # Install Ollama
+    curl -fsSL https://ollama.com/install.sh | sh
+
+    # Pull a model
+    ollama pull llama2
+    ```
+
+    Then add the following to your project's `opencode.json`:
+
+    ```json
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "provider": {
+        "ollama": {
+          "npm": "@ai-sdk/openai-compatible",
+          "name": "Ollama (local)",
+          "options": {
+            "baseURL": "http://localhost:11434/v1"
+          },
+          "models": {
+            "llama2": {
+              "name": "Llama 2"
+            }
+          }
+        }
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Core commands
+
+Once inside an OpenCode session, these slash commands control the agent:
+
+| Command | What it does |
+|:--------|:-------------|
+| `/models` | Switch the active model |
+| `/connect` | Add or update an API key for a provider |
+| `/init` | Initialize the project — generates an `AGENTS.md` rules file |
+| `/undo` | Revert the last file change made by the agent |
+| `/redo` | Re-apply a reverted change |
+| `/share` | Generate a shareable link to the current conversation |
+| `Tab` | Toggle Plan mode — the agent plans but does not execute |
+
+<Tip>
+  Use `Tab` to enter Plan mode before large tasks. Review the plan, adjust it if needed, then press `Tab` again to let the agent execute. This prevents the agent from making sweeping changes you did not intend.
+</Tip>
+
+## Delegate configuration tasks to the agent
+
+OpenCode's core value proposition is that you can hand it any setup task and let it work autonomously. Here are ready-to-use prompts:
+
+<AccordionGroup>
+  <Accordion title="Install an MCP server">
+    ```text
+    Install the filesystem MCP server and configure it for OpenCode.
+    ```
+  </Accordion>
+
+  <Accordion title="Deploy a GitHub project">
+    ```text
+    Clone https://github.com/[owner]/[repo], read the README, and complete all dependency installation and environment configuration.
+    ```
+  </Accordion>
+
+  <Accordion title="Create project rules">
+    ```text
+    Read the project structure and create an appropriate AGENTS.md rules file for this project.
+    ```
+  </Accordion>
+
+  <Accordion title="Set up environment variables">
+    ```text
+    Check which environment variables this project needs, create a .env template file, and explain the purpose of each variable.
+    ```
+  </Accordion>
+
+  <Accordion title="Resolve dependency conflicts">
+    ```text
+    Analyze package.json / requirements.txt, install all dependencies, and resolve any version conflicts.
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Recommended daily workflow
+
+<Steps>
+  <Step title="Navigate to your project">
+    ```bash
+    cd /path/to/project
+    opencode
+    ```
+  </Step>
+
+  <Step title="Initialize project rules">
+    On first use in a new project, run `/init`. OpenCode reads your codebase and writes an `AGENTS.md` file that gives the agent persistent context about your project's conventions.
+
+    ```text
+    /init
+    ```
+  </Step>
+
+  <Step title="Select a free model">
+    ```text
+    /models
+    # Choose GLM-4.7 or MiniMax M2.1
+    ```
+  </Step>
+
+  <Step title="Plan before executing">
+    Press `Tab` to enter Plan mode. Describe the task. Review the plan the agent proposes, then press `Tab` again to execute — or refine the plan first.
+  </Step>
+</Steps>
+
+## Configuration file locations
+
+| File | Purpose |
+|:-----|:--------|
+| `~/.config/opencode/opencode.json` | Global configuration (applies to all projects) |
+| `./opencode.json` | Project-level configuration (overrides global) |
+| `~/.local/share/opencode/auth.json` | Stored API keys and provider credentials |
+
+<Warning>
+  Never commit `auth.json` or any `opencode.json` file that contains API keys to version control. Add both to your `.gitignore`.
+</Warning>
+
+## What to do next
+
+You now have a working AI terminal. To get more out of it, explore:
+
+<CardGroup cols={2}>
+  <Card title="Core principles" icon="book" href="/principles/problem-solving">
+    Learn problem-solving frameworks and prompt engineering strategies before writing production code.
+  </Card>
+  <Card title="Headless CLI skill" icon="terminal" href="/skills/headless-cli">
+    Detailed patterns for running AI agents in fully autonomous headless mode.
+  </Card>
+  <Card title="Tmux autopilot" icon="grid-2" href="/skills/tmux-autopilot">
+    Run multiple OpenCode sessions in parallel using tmux panes.
+  </Card>
+  <Card title="Playbook" icon="map" href="/playbook/workflow">
+    The complete Vibe Coding development workflow from idea to deployed project.
+  </Card>
+</CardGroup>

@@ -1,80 +1,100 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Get started with Vibe Coding in 1 minute"
+description: "Already have a network connection and a dev environment? Copy one prompt into Claude or ChatGPT and start building your first AI-assisted project right now."
 ---
 
-## Get started in three steps
+If you already have a network connection and a browser, you can start Vibe Coding immediately — no setup required. Copy the prompt below, paste it into [Claude](https://claude.ai/) or [ChatGPT](https://chatgpt.com/), and follow the AI's guidance. For a complete environment setup, continue to the full beginner path below.
 
-Get your documentation site running locally and make your first customization.
+## The 1-minute prompt
 
-### Step 1: Set up your local environment
+Copy the prompt below verbatim and paste it into any capable LLM (Claude or ChatGPT recommended):
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+```text
+你是一个专业的 AI 编程助手。我想用 Vibe Coding 的方式开发一个项目。
 
-### Step 2: Deploy your changes
+请先问我：
+1. 你想做什么项目？（一句话描述）
+2. 你熟悉什么编程语言？（不熟悉也没关系）
+3. 你的操作系统是什么？
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+然后帮我：
+1. 推荐最简单的技术栈
+2. 生成项目结构
+3. 一步步指导我完成开发
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+要求：每完成一步问我是否成功，再继续下一步。
+```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+Follow the AI's questions, describe your project idea, and let it guide you step by step. That's it.
 
-### Step 3: Go live
+<Tip>
+  The prompt asks the AI to confirm each step before moving to the next. This is intentional — it prevents AI from running ahead and creating code you can't verify.
+</Tip>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## Complete beginner path
 
-## Next steps
+If you're starting from zero, work through the following steps in order. Each step builds on the previous one.
 
-Now that you have your docs running, explore these key features:
+<Steps>
+  <Step title="Understand problem-solving fundamentals">
+    Before writing any code, read the [problem-solving framework](/principles/problem-solving). The core model is simple:
+
+    - **Define the problem**: goal, current state, gap, success criteria
+    - **Construct the solution**: object, constraints, path
+    - **Verify the result**: feedback, iteration, convergence
+
+    This framework applies to every task you will delegate to an AI — from writing a function to debugging a production issue.
+  </Step>
+  <Step title="Read the Vibe Coding philosophy">
+    Read the [philosophy page](/philosophy) to understand the core principles before touching any tools. The key insight:
+
+    > You describe intent and validate results. The AI understands intent, executes operations, and generates output.
+
+    This division of labor is what makes Vibe Coding work — and what makes it fail when ignored.
+  </Step>
+  <Step title="Configure your network">
+    Follow the [network setup guide](/getting-started/network-setup) to ensure you have reliable access to AI services. Many issues with AI-assisted development trace back to unstable connections rather than bad prompts.
+  </Step>
+  <Step title="Set up your development environment">
+    Follow the [dev environment guide](/getting-started/dev-environment). Copy the provided prompt and let the AI guide you through installing and configuring your environment. You do not need to understand every command — just verify that each step succeeds before continuing.
+  </Step>
+  <Step title="Configure your IDE">
+    Follow the [IDE setup guide](/getting-started/ide-setup) to configure VS Code. A properly configured editor gives the AI better context about your project and reduces the chance of errors.
+  </Step>
+  <Step title="Install and configure OpenCode CLI">
+    Follow the [OpenCode CLI guide](/getting-started/opencode-cli) to set up your AI command-line tool. OpenCode supports free-tier models including GLM-4.7 and MiniMax M2.1, giving you a persistent AI development partner directly in your terminal.
+  </Step>
+</Steps>
+
+## Conceptual foundation (optional but recommended)
+
+Before the beginner path above, the project recommends reading one short conceptual document. All methods, workflows, and skills in this guide share a common framework for understanding systems and change:
+
+> **object → state → snapshot → sequence → process → transformation → identity/difference → relation**
+
+This nine-concept model appears in philosophy, mathematics, computer science, and system design. It gives you a stable vocabulary for describing what exists, how it changes, and how to record and reason about those changes. You will see these terms throughout the guide.
+
+Read the full framework: [A minimal framework for understanding the world, describing change, and organizing knowledge](/philosophy).
+
+<Info>
+  You do not need to master this framework before starting. Read it once, keep it in mind, and return to it when you encounter unfamiliar terminology in later sections.
+</Info>
+
+## What comes next
+
+Once you have completed the beginner path:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Core Principles" icon="book" href="/principles/problem-solving">
+    Problem solving, prompt engineering, common pitfalls, and project architecture.
+  </Card>
+  <Card title="Glue Coding" icon="link" href="/principles/glue-coding">
+    The evolved form of Vibe Coding: compose proven libraries instead of generating from scratch.
+  </Card>
+  <Card title="Advanced Methods" icon="layer-group" href="/methods/canvas-whiteboard">
+    Canvas whiteboard development, AI swarm collaboration, and meta-methodology.
+  </Card>
+  <Card title="Skills Library" icon="bolt" href="/skills/overview">
+    Reusable AI skill modules for specialized tasks, ready to load into any session.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

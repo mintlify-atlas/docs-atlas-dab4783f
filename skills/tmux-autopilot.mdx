@@ -1,0 +1,234 @@
+---
+title: "tmux Autopilot skill: AI agent orchestration"
+description: "Use tmux Autopilot to let AI agents read terminal output, send keystrokes, and coordinate swarms of parallel AI workers through shared terminal state."
+icon: "terminal"
+---
+
+tmux Autopilot is the skill that turns a tmux session into a collaborative workspace where AI agents can observe, act on, and coordinate across multiple terminal panes. Instead of an AI that can only see the current conversation window, you get an AI that can read any pane's output, send keystrokes to any pane, rescue stuck tasks, and orchestrate a full swarm of parallel worker agents — all through standard `tmux` commands.
+
+The skill is configured for the `oh-my-tmux` distribution (gpakosz/.tmux) with primary prefix `C-a` and secondary prefix `C-b`, and it covers everything from quick pane inspection to setting up a multi-agent commander-and-worker topology.
+
+## When to use this skill
+
+Trigger the skill when you need any of the following:
+
+- **Read any terminal** — capture recent output from a pane that is running a long job, an AI agent, or an install script
+- **Send input to any terminal** — confirm a `(y/n)` prompt, interrupt a hung process, or send a full command line without switching windows
+- **Swarm orchestration** — inspect the status of multiple AI worker sessions and rescue the ones that are stuck
+- **Autopilot rescue** — detect an error in a background pane and respond without manual intervention
+- **oh-my-tmux key reference** — quickly recall shortcut keys and prefix behavior for the configured setup
+
+## Boundaries
+
+Do not use this skill when:
+
+- The target session, window, or pane does not yet exist (create it first with `new-session` / `new-window` / `split-window`)
+- You need to edit `~/.tmux.conf` directly — use `~/.tmux.conf.local` to override oh-my-tmux settings
+- Your tmux version is older than 2.6 — upgrade before using these command combinations
+- The pane is in copy-mode — exit copy-mode first with `send-keys -X cancel` before sending commands
+
+## Quick reference
+
+All commands below can be copied and run directly.
+
+### Enumerate the topology
+
+```bash
+tmux list-sessions
+tmux list-windows -a -F '#S:#I:#W#F'
+tmux list-panes   -a -F '#S:#I.#P #{pane_current_command} #{pane_title}'
+```
+
+### Read output from a pane
+
+```bash
+# Capture the last 120 lines from session:window.pane
+tmux capture-pane -t <session>:<window>.<pane> -p -S -120
+```
+
+### Send keystrokes to a pane
+
+```bash
+# Confirm a prompt
+tmux send-keys -t <session>:<window>.<pane> "y" Enter
+
+# Interrupt a hung process
+tmux send-keys -t <session>:<window>.<pane> C-c
+
+# Send a full command line character-by-character (safe for special chars)
+tmux send-keys -t <session>:<window>.<pane> -l "my command here" && \
+  tmux send-keys -t <session>:<window>.<pane> Enter
+```
+
+### Synchronize all panes in a window
+
+```bash
+# Broadcast: every keystroke goes to all panes in the window
+tmux set-window-option synchronize-panes on
+
+# Turn it off when done
+tmux set-window-option synchronize-panes off
+```
+
+### Swarm inspection loop
+
+```bash
+# Scan all windows and prefix each line with [session:window]
+for w in $(tmux list-windows -a -F '#S:#I'); do
+  tmux capture-pane -t "$w" -p -S -80 | sed "s/^/[$w] /";
+done
+```
+
+### Automated rescue: detect and confirm a (y/n) prompt
+
+```bash
+target="0:3.0"
+tmux capture-pane -t "$target" -p -S -50 | grep -qi "(y/n)" && \
+  tmux send-keys -t "$target" "y" Enter
+```
+
+### Log pane output to a file
+
+```bash
+tmux pipe-pane -t <session>:<window>.<pane> -o \
+  'cat >> /tmp/tmux-<session>-<window>-<pane>.log'
+```
+
+### Check a pane's current working directory
+
+```bash
+tmux display-message -pt <target> '#{pane_current_path}'
+```
+
+## Setting up an AI swarm workspace
+
+The canonical swarm topology is one commander pane plus N worker panes. Each worker runs an AI agent session; the commander orchestrates them.
+
+```bash
+# Create the session with a commander window
+tmux new-session -d -s ai-hub -n commander 'bash'
+
+# Add three worker windows (each runs its own AI agent)
+tmux new-window -t ai-hub -n worker1 'kiro-cli chat'
+tmux new-window -t ai-hub -n worker2 'kiro-cli chat'
+tmux new-window -t ai-hub -n worker3 'kiro-cli chat'
+
+# Attach to the session
+tmux attach -t ai-hub
+```
+
+After attaching, use the enumeration commands from the quick reference to verify all four windows are present, then use `capture-pane` from the commander window to read each worker's latest output.
+
+<Tip>
+  Always run `list-windows` or `list-panes` before any batch operation to build an explicit whitelist of target panes. Never send commands to windows you haven't identified — you risk interrupting unrelated work.
+</Tip>
+
+## Enabling oh-my-tmux (repo version)
+
+```bash
+# Symlink the config from the repo
+ln -sfn /path/to/vibe-coding-cn/assets/repo/.tmux/.tmux.conf ~/.tmux.conf
+
+# Copy the local override file (skip if already present)
+cp -n /path/to/vibe-coding-cn/assets/repo/.tmux/.tmux.conf.local ~/.tmux.conf.local
+```
+
+Customize keybindings and status bar in `~/.tmux.conf.local` — never edit the main `.tmux.conf` directly so you can pull updates cleanly.
+
+## Rules the AI follows
+
+<AccordionGroup>
+  <Accordion title="Always capture before sending">
+    Before sending any keystrokes, run `capture-pane` to confirm the target context. This prevents sending `y` to a pane that is not actually waiting for a prompt.
+  </Accordion>
+  <Accordion title="Use absolute addressing">
+    Every send-keys or capture-pane command must specify the full `<session>:<window>.<pane>` address. Never rely on the current window being correct.
+  </Accordion>
+  <Accordion title="Grep before acting on rescue">
+    When automating rescue, grep for the trigger keyword (`(y/n)`, `password:`, `Proceed?`) before sending. Only act on confirmed matches.
+  </Accordion>
+  <Accordion title="Turn off synchronize-panes immediately">
+    After any broadcast operation, run `synchronize-panes off` before doing anything else. Leaving broadcast on causes every subsequent keystroke to go to all panes.
+  </Accordion>
+  <Accordion title="Never send destructive commands blindly">
+    `kill-server`, `rm -rf`, and similar destructive commands must be preceded by a `capture-pane` confirmation that the target pane is in the expected state.
+  </Accordion>
+</AccordionGroup>
+
+## End-to-end examples
+
+### Example 1: confirm a stuck installer
+
+An install script is paused at `Proceed? (y/n)` in pane `0:3.0`.
+
+```bash
+# Step 1: verify the prompt is actually there
+tmux capture-pane -t 0:3.0 -p -S -50 | grep -qi "(y/n)"
+
+# Step 2: send confirmation only if the grep matched
+tmux send-keys -t 0:3.0 "y" Enter
+```
+
+The script continues running. No additional input is sent.
+
+### Example 2: swarm inspection and rescue
+
+Four AI worker panes are distributed across windows in session `ai-hub`. One has hit an error.
+
+<Steps>
+  <Step title="Run the swarm inspection loop">
+    Collect the last 80 lines from each window. Scan for `Traceback`, `ERROR`, and `(y/n)`.
+  </Step>
+  <Step title="Rescue the waiting pane">
+    For panes matching `(y/n)`, run the automated rescue snippet to send `y`.
+  </Step>
+  <Step title="Flag the error pane">
+    For panes with `Traceback` or `ERROR`, capture the full output to a file and notify the human operator. Do not auto-recover; wait for manual review.
+  </Step>
+</Steps>
+
+### Example 3: exit a Codex UI pane before running shell commands
+
+If a pane is running a Codex-style interactive UI, send `/exit` first to return to a shell prompt before issuing any shell command.
+
+```bash
+tmux send-keys -t ai-hub:worker1 "/exit" Enter
+# wait a moment, then verify the pane is at a shell prompt
+tmux capture-pane -t ai-hub:worker1 -p -S -5
+# now safe to send a shell command
+tmux send-keys -t ai-hub:worker1 "git status" Enter
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="'no such session/window/pane' error">
+    Run `list-sessions` and `list-windows` to verify the exact names. Session and window names are case-sensitive. Use the full `session:window.pane` form.
+  </Accordion>
+  <Accordion title="Prefix key not working">
+    oh-my-tmux defaults to `C-a` as the primary prefix. Check `~/.tmux.conf.local` to see if the prefix has been overridden. If another program (e.g., GNU Screen) intercepts `C-a`, switch to `C-b` via `set -g prefix C-b` in the local config.
+  </Accordion>
+  <Accordion title="send-keys has no effect">
+    The pane may be in copy-mode. Check with `tmux display-message -pt <target> '#{pane_in_mode}'`. If it returns `1`, exit copy-mode with `tmux send-keys -t <target> -X cancel` first. Avoid using `Escape` — it triggers the Meta prefix and may swallow the first character of your next command.
+  </Accordion>
+  <Accordion title="Status bar is garbled or duplicated">
+    This is usually a terminal font or wide-character issue. Test with `tmux -f /dev/null -L test` to rule out configuration. If the clean tmux session looks fine, the problem is in your terminal emulator's font settings.
+  </Accordion>
+</AccordionGroup>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="AI Swarm method" icon="users" href="/methods/ai-swarm">
+    The full methodology for running multiple AI agents in parallel on a single project.
+  </Card>
+  <Card title="Skills overview" icon="layer-group" href="/skills/overview">
+    How skills work and when to load them.
+  </Card>
+  <Card title="Harness Engineering" icon="shield-check" href="/methods/harness-engineering">
+    Build automated verification loops so your AI swarm can self-evaluate its output.
+  </Card>
+  <Card title="Playbook: workflow" icon="list-check" href="/playbook/workflow">
+    The end-to-end development workflow where tmux Autopilot fits as the execution layer.
+  </Card>
+</CardGroup>

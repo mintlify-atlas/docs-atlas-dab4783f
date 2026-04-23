@@ -1,0 +1,140 @@
+---
+title: "Skills Library: AI specialist capability modules"
+description: "Browse 20 reusable AI skill modules — from meta-skills and CLI tools to databases and crypto trading — ready to load into any agent."
+keywords: ["skills", "ai skills", "reusable", "capability modules", "prompt engineering"]
+---
+
+AI Skills are higher-level capability modules that go beyond simple prompts. Each skill bundles a trigger definition, activation conditions, boundary rules, deliverables, and reproducible workflow steps into a single `SKILL.md` entrypoint — giving any AI agent expert-level behavior in a specific domain on demand.
+
+## How skills work
+
+<Steps>
+  <Step title="Load the skill into your agent context">
+    Copy the contents of the relevant `SKILL.md` into your AI assistant's system prompt, project context, or memory file (for example, Claude's `CLAUDE.md` or OpenCode's context window).
+  </Step>
+  <Step title="State the trigger condition">
+    Describe what you need using the keywords and task framing that match the skill's "When to Use" section. The skill's frontmatter `description` is designed to activate automatically in AI tools that support skills natively.
+  </Step>
+  <Step title="Provide required inputs">
+    Each skill lists mandatory inputs. If any are missing, the skill instructs the AI to ask 1–3 targeted questions before proceeding — never making up information.
+  </Step>
+  <Step title="Receive structured deliverables">
+    The skill produces a defined output: a SKILL.md file, an SOP document, an architecture whiteboard JSON, a code review, or a translated document, depending on which skill you loaded.
+  </Step>
+</Steps>
+
+<Note>
+  Skills are not prompts — they are operator manuals. Each one defines what is in scope, what is explicitly out of scope, and includes at least three reproducible examples with acceptance criteria.
+</Note>
+
+## Skill categories
+
+<CardGroup cols={2}>
+  <Card title="Meta Skills" icon="wand-magic-sparkles" href="/skills/skills-skills">
+    Skills that generate and validate other skills. Use these to create custom skills from any domain material.
+  </Card>
+  <Card title="AI Tools" icon="robot" href="/skills/canvas-dev">
+    Skills for working with AI CLI tools, canvas-driven development, and headless automation pipelines.
+  </Card>
+  <Card title="Databases" icon="database" href="/skills/postgresql">
+    PostgreSQL and TimescaleDB expert skills covering schema design, queries, and time-series patterns.
+  </Card>
+  <Card title="Crypto / Trading" icon="chart-line">
+    Skills for CCXT, CoinGecko, Cryptofeed, Hummingbot, and Polymarket APIs.
+  </Card>
+  <Card title="Dev Tools" icon="wrench">
+    Skills for Telegram bots, DDD document stewardship, Twitter scraping, DOM snapshots, and proxy chains.
+  </Card>
+  <Card title="Productivity" icon="bolt">
+    Skills for Markdown-to-EPUB conversion and tmux AI swarm automation.
+  </Card>
+</CardGroup>
+
+## Full skills index
+
+### Meta skills
+
+| Skill | Description |
+|:---|:---|
+| [skills-skills](/skills/skills-skills) | ⭐ Generates other skills — turns any domain material (docs, APIs, code, specs) into a reusable SKILL.md |
+| [sop-generator](/skills/sop-generator) | Converts scattered resources, requirements, or logs into structured, executable SOPs |
+
+### AI tools
+
+| Skill | Description |
+|:---|:---|
+| [canvas-dev](/skills/canvas-dev) | ⭐ Canvas whiteboard-driven development — the AI Architecture Director role, with the whiteboard as the single source of truth |
+| [headless-cli](/skills/headless-cli) | Non-interactive AI CLI calls for Gemini, Claude Code, and Codex CLI — batch processing and automation pipelines |
+| [claude-code-guide](/skills/claude-code-guide) | Comprehensive Claude Code CLI usage guide covering tools, REPL, MCP, hooks, and advanced patterns |
+| claude-cookbooks | Claude API best practices and cookbook patterns |
+
+### Databases
+
+| Skill | Description |
+|:---|:---|
+| [postgresql](/skills/postgresql) | ⭐ Complete PostgreSQL expert skill — schema design, indexing, query optimization, and migrations |
+| [timescaledb](/skills/timescaledb) | PostgreSQL time-series extension — hypertables, continuous aggregates, and compression |
+
+### Crypto / Quantitative trading
+
+| Skill | Description |
+|:---|:---|
+| ccxt | Unified cryptocurrency exchange API — spot, futures, and market data across 100+ exchanges |
+| coingecko | CoinGecko price and market data API |
+| cryptofeed | Real-time cryptocurrency data streaming |
+| hummingbot | Quantitative trading bot framework |
+| polymarket | Prediction market API and event contracts |
+
+### Dev tools
+
+| Skill | Description |
+|:---|:---|
+| ddd-doc-steward | Documentation-driven development (DDD) — keeping docs as the primary artifact |
+| telegram-dev | Telegram Bot development with Python and the Bot API |
+| twscrape | Twitter/X data scraping |
+| snapdom | DOM snapshot and testing automation |
+| proxychains | Proxy chain configuration for network routing |
+| [tmux-autopilot](/skills/tmux-autopilot) | tmux automation and AI swarm orchestration via `send-keys` and `capture-pane` |
+
+### Productivity
+
+| Skill | Description |
+|:---|:---|
+| markdown-to-epub | Stable Markdown → EPUB ebook conversion pipeline |
+
+## Create a custom skill
+
+You can generate a new skill for any domain using the meta-skill. The process takes three steps:
+
+<Steps>
+  <Step title="Prepare your domain material">
+    Collect the documentation, API specs, code examples, and known failure modes for the domain you want to cover. The more concrete the material, the better the generated skill.
+  </Step>
+  <Step title="Load skills-skills and provide your material">
+    Give the AI both `assets/skills/skills-skills/SKILL.md` and your domain material. The meta-skill will scaffold the directory layout, write the frontmatter, extract patterns, add examples, and apply the quality gate.
+  </Step>
+  <Step title="Validate and iterate">
+    Run the built-in validator: `./assets/skills/skills-skills/scripts/validate-skill.sh assets/skills/<your-skill> --strict`. Fix any warnings before shipping.
+  </Step>
+</Steps>
+
+<Tip>
+  If your source material is a documentation website or GitHub repository, use the bundled Skill Seekers tool to generate a first draft automatically before refining it with the meta-skill.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Skills-Skills" icon="wand-magic-sparkles" href="/skills/skills-skills">
+    The meta-skill that generates all other skills.
+  </Card>
+  <Card title="SOP Generator" icon="list-check" href="/skills/sop-generator">
+    Turn any resource set into a runnable SOP.
+  </Card>
+  <Card title="Canvas Dev" icon="palette" href="/skills/canvas-dev">
+    AI Architecture Director with whiteboard as source of truth.
+  </Card>
+  <Card title="Headless CLI" icon="terminal" href="/skills/headless-cli">
+    Non-interactive AI CLI automation for Gemini, Claude, and Codex.
+  </Card>
+</CardGroup>

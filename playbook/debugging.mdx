@@ -1,0 +1,189 @@
+---
+title: "Debugging AI-generated code effectively"
+description: "Practical strategies for diagnosing and fixing AI-generated code: browser errors, reverting changes, code review, and minimum reproduction techniques."
+---
+
+AI-generated code fails in predictable ways. The model may hallucinate an API, produce logic that works in isolation but breaks in context, or make a change that silently corrupts state elsewhere. The good news is that most of these failures are recoverable with a small set of reliable techniques. This page covers the common debugging approaches, code review principles, and the minimum reproduction strategy that keeps you moving without losing hours to a single stuck point.
+
+## Common debugging approaches
+
+### JavaScript errors: use the browser console
+
+When a JavaScript error occurs, open the browser developer tools with `F12`, navigate to the **Console** tab, and copy the full error message — including the stack trace. Paste the error directly into your AI chat along with a description of what you expected to happen.
+
+```
+Error from browser console:
+TypeError: Cannot read properties of undefined (reading 'map')
+    at Dashboard.render (dashboard.js:47)
+
+Expected: The dashboard renders a list of items.
+Actual: Blank screen, error above.
+```
+
+For visual bugs, take a screenshot and attach it. The AI can diagnose layout and rendering issues from images.
+
+<Tip>
+Install [BrowserTools](https://browsertools.agentdesk.ai/installation) to automatically copy errors and screenshots from your browser to your AI chat. It eliminates the manual copy-paste step for browser errors.
+</Tip>
+
+### Reading server-side errors
+
+For backend errors, copy the complete log output — not just the last line. Stack traces reveal which file and line triggered the failure. Include the relevant code block and what you were trying to do when the error occurred.
+
+### Providing structured bug reports
+
+The most effective bug reports follow a simple pattern:
+
+**Expected behavior** → what should happen  
+**Actual behavior** → what actually happened  
+**Minimum reproduction** → the smallest piece of code or sequence of steps that triggers the bug
+
+```
+Expected: Clicking "Submit" saves the form and shows a success message.
+Actual: Clicking "Submit" shows a success message but does not save.
+Minimum repro: Open the form, fill in any value, click Submit, check the database.
+```
+
+This format forces precision and gives the AI exactly what it needs to reason about the failure.
+
+## Reverting changes
+
+### Claude Code: `/rewind`
+
+If a prompt goes wrong and produces broken code, use `/rewind` in Claude Code to roll back to the previous state. This is the fastest recovery for a single failed step.
+
+### Git reset for Codex CLI
+
+With Codex CLI, commit frequently — ideally after every successfully verified step. When a step fails badly, roll back to the last good commit:
+
+```bash
+# See recent commits
+git log --oneline -10
+
+# Reset to a specific commit (discards changes since then)
+git reset --hard <commit-hash>
+```
+
+<Warning>
+`git reset --hard` permanently discards uncommitted changes. If you are unsure, use `git stash` first to preserve your current state before resetting.
+</Warning>
+
+### When to revert vs. debug
+
+Revert immediately if:
+- The AI made changes to multiple files and you cannot isolate what broke
+- The error is cryptic and the AI's explanation is circular
+- More than two debugging attempts have failed
+
+Debug in place if:
+- The error message is clear and points to a specific location
+- The change was small and contained to one file
+
+## When you are completely stuck
+
+If debugging is not converging after several attempts, use a codebase-level approach:
+
+1. Use [RepoPrompt](https://repoprompt.com/) or [uithub](https://uithub.com/) to package your entire codebase into a single file
+2. Feed the packaged codebase to a fresh Claude or GPT session
+3. Describe the problem and ask for a diagnosis
+
+This approach gives the AI full project context rather than the partial view it gets from a single file or error message. It is especially effective for bugs that span multiple files or involve subtle interactions between modules.
+
+<Note>
+[Zread](https://zread.ai/) is another option for AI-driven codebase reading. It helps you understand project structure before diving into debugging.
+</Note>
+
+## Code review principles
+
+Before debugging a specific error, it helps to understand the systematic approach to reviewing AI-generated code. The framework below is adapted from `审查代码.md`.
+
+### Input, purpose, and constraints
+
+Every code review should start by defining three things:
+
+| Element | Question to answer |
+|---|---|
+| **Purpose** | What is this code supposed to do? |
+| **Object** | What data or system does it operate on? |
+| **Constraints** | What must it never do? What are the performance, safety, or correctness bounds? |
+
+### The structured review prompt
+
+When you want the AI to review its own output — or someone else's code — use this structure:
+
+```
+Role: You are a world-class systems architect and quality engineering expert.
+Task: Build a complete, executable checklist for reviewing this code.
+
+Project background:
+- Goal: [what the code should accomplish]
+- Use scenario: [where and how it runs]
+- Tech stack / environment: [languages, frameworks, infrastructure]
+- Key constraints: [performance, security, correctness requirements]
+
+Requirements to check (define each one):
+- y1: Robustness — handles failures and edge cases
+- y2: Completeness — covers all specified behavior
+- y3: Security — prevents unauthorized access or data exposure
+- y4: Performance — meets latency and throughput requirements
+- y5: Low complexity — maintainable without deep expertise
+
+For each requirement:
+1. Define it precisely in engineering terms
+2. List all checkpoints (each must be Yes/No/Unknown)
+3. For each checkpoint: definition, why it matters, how to verify, pass criteria
+4. Identify conflicts between requirements and suggest priority ordering
+```
+
+<Tip>
+Run the review prompt in a fresh session. Paste the output into another fresh session and ask the AI to actually perform the checks. Two-pass review catches more issues than single-pass.
+</Tip>
+
+### Checkpoint categories
+
+For each requirement, a thorough review covers five layers:
+
+<AccordionGroup>
+  <Accordion title="Design layer">
+    Is the architecture sound? Are modules appropriately separated? Does the interface match the actual need?
+  </Accordion>
+  <Accordion title="Implementation layer">
+    Are edge cases handled? Is error propagation correct? Are there race conditions or resource leaks?
+  </Accordion>
+  <Accordion title="Runtime and operations layer">
+    Does it behave correctly under load? Are logs sufficient to diagnose failures? Is there a degradation path?
+  </Accordion>
+  <Accordion title="Boundary and exception layer">
+    What happens with empty input, maximum input, invalid types, network failure, or concurrent access?
+  </Accordion>
+  <Accordion title="Cross-requirement conflict layer">
+    Does making this more secure make it slower? Does simplifying it reduce robustness? Surface the tradeoffs explicitly.
+  </Accordion>
+</AccordionGroup>
+
+## Testing strategy
+
+<CardGroup cols={2}>
+  <Card title="Let the AI write tests" icon="robot">
+    Ask the AI to generate the test suite. It is faster and more comprehensive than writing tests by hand. Use it for unit tests, integration tests, and edge case coverage.
+  </Card>
+  <Card title="Human reviews the assertions" icon="eye">
+    Read every assertion the AI writes. The AI can write syntactically correct tests that test the wrong thing. You are responsible for verifying that assertions match the actual specification.
+  </Card>
+  <Card title="Minimum reproduction first" icon="minimize">
+    When debugging, always isolate the minimum code path that reproduces the failure before asking the AI to fix anything. Smaller surface area means more accurate diagnosis.
+  </Card>
+  <Card title="Persist failures as experience" icon="database">
+    When a bug pattern recurs, have the AI turn the failure and its fix into a documented lesson. Store it in your project knowledge base and reference it in future prompts.
+  </Card>
+</CardGroup>
+
+<Info>
+The general principle from the Vibe Coding experience collection: "Debug by giving only: expected vs. actual + minimum reproduction." This single constraint eliminates most wasted debugging cycles.
+</Info>
+
+## Related pages
+
+- [The complete Vibe Coding development workflow](/playbook/workflow) — the workflow that prevents many bugs in the first place
+- [Common pitfalls](/principles/common-pitfalls) — recurring mistakes and how to avoid them
+- [Prompt engineering](/principles/prompt-engineering) — writing prompts that reduce AI error rates

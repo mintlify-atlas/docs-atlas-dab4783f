@@ -1,0 +1,275 @@
+---
+title: "AI Swarm: multi-agent tmux coordination"
+description: "Run multiple AI agents as an autonomous cluster using tmux — each agent perceives, controls, and coordinates with others without human bottlenecks."
+icon: "users"
+---
+
+AI Swarm is a multi-agent coordination system built on tmux. Instead of routing every task through a human operator, it lets AI instances perceive each other's terminal output, send commands to each other's sessions, and synchronize state through shared files. The result is a cluster that collaborates autonomously — humans set direction, AI handles execution and coordination.
+
+## Traditional mode vs Swarm mode
+
+```
+Traditional: Human ←→ AI₁,  Human ←→ AI₂,  Human ←→ AI₃
+                                                        (human is the bottleneck)
+
+Swarm mode:  Human → AI₁ ←→ AI₂ ←→ AI₃
+                                                        (AI coordinates autonomously)
+```
+
+In traditional mode, every interaction, confirmation, and handoff flows through the human. In Swarm mode, AIs monitor each other, unblock each other, and divide work — reducing human involvement to high-level direction.
+
+## Three core capabilities
+
+| Capability | Mechanism | Effect |
+|:-----------|:----------|:-------|
+| **Perception** | `capture-pane` | Read the content of any terminal window |
+| **Control** | `send-keys` | Send commands or keystrokes to any terminal window |
+| **Coordination** | Shared state files | Persistent task queue, locks, and status log |
+
+## How it works: tmux architecture
+
+```
+┌─────────────────────────────────────────────┐
+│                 tmux server                  │
+├─────────────────────────────────────────────┤
+│  Session: ai                                 │
+│  ├── Window 0:master  [AI-Master]  ◄──┐      │
+│  ├── Window 0:worker-1 [AI-1]      ◄──┼── mutually visible and controllable
+│  ├── Window 0:worker-2 [AI-2]      ◄──┤      │
+│  └── Window 0:worker-3 [AI-3]      ◄──┘      │
+└─────────────────────────────────────────────┘
+```
+
+Each window runs an independent AI session. Any window can read any other window's output and send it commands.
+
+## Essential tmux commands
+
+### Reading terminal output
+
+```bash
+# List all windows
+tmux list-windows -a
+
+# Read the last 100 lines from session 0, window 1
+tmux capture-pane -t 0:1 -p -S -100
+
+# Save output to a file
+tmux capture-pane -t 0:1 -p -S -500 > /tmp/window1.log
+
+# Scan all windows in a loop
+for w in $(tmux list-windows -a -F '#{session_name}:#{window_index}'); do
+  echo "=== $w ==="
+  tmux capture-pane -t "$w" -p -S -30
+done
+```
+
+### Sending commands
+
+```bash
+# Send a command with Enter
+tmux send-keys -t 0:1 "ls -la" Enter
+
+# Confirm a prompt
+tmux send-keys -t 0:1 "y" Enter
+
+# Send special keys
+tmux send-keys -t 0:1 C-c    # Ctrl+C — interrupt
+tmux send-keys -t 0:1 C-d    # Ctrl+D — EOF
+tmux send-keys -t 0:1 Escape # ESC
+```
+
+### Window management
+
+```bash
+# Create a new named window
+tmux new-window -n "ai-worker"
+
+# Create a window and start an AI session immediately
+tmux new-window -n "ai-1" "kiro-cli chat"
+
+# Close a window
+tmux kill-window -t 0:1
+```
+
+## Setting up a swarm
+
+<Steps>
+  <Step title="Create shared state directories">
+    ```bash
+    mkdir -p /tmp/ai_swarm/{locks,results}
+    touch /tmp/ai_swarm/status.log
+    ```
+
+    The shared state layout:
+
+    ```bash
+    /tmp/ai_swarm/
+    ├── status.log      # global status log
+    ├── tasks.json      # task queue
+    ├── locks/          # task locks (prevent duplicate work)
+    │   └── task_001.lock
+    └── results/        # per-agent results
+        ├── ai_1.json
+        └── ai_2.json
+    ```
+  </Step>
+
+  <Step title="Start a tmux session and open windows">
+    ```bash
+    tmux new-session -d -s ai
+    tmux new-window -t ai -n "master"
+    tmux new-window -t ai -n "worker-1"
+    tmux new-window -t ai -n "worker-2"
+    tmux new-window -t ai -n "worker-3"
+    ```
+  </Step>
+
+  <Step title="Start AI sessions in each window">
+    ```bash
+    tmux send-keys -t ai:master   "kiro-cli chat" Enter
+    tmux send-keys -t ai:worker-1 "kiro-cli chat" Enter
+    tmux send-keys -t ai:worker-2 "kiro-cli chat" Enter
+    tmux send-keys -t ai:worker-3 "kiro-cli chat" Enter
+    ```
+  </Step>
+
+  <Step title="Send the swarm protocol prompt to each agent">
+    Paste the worker or master prompt template (see below) into each window to activate swarm-aware behavior.
+  </Step>
+</Steps>
+
+## Collaboration protocols
+
+### Status log format
+
+```bash
+# Format: [HH:MM:SS] [window-id] [STATUS] description
+[08:15:30] [0:1] [START] Beginning audit of data-service
+[08:16:45] [0:1] [DONE]  Audit complete — 5 issues found
+[08:16:50] [0:2] [WAIT]  Waiting for audit results from 0:1
+[08:17:00] [0:2] [START] Beginning fixes
+```
+
+### Coordination rules
+
+| Rule | Description | Implementation |
+|:-----|:------------|:---------------|
+| **Scan before acting** | Check other terminals before starting | `capture-pane` full scan |
+| **Avoid duplicate work** | Only one agent handles each task | Check `/tmp/ai_swarm/locks/` |
+| **Proactive rescue** | Detect blocked agents and unblock them | Detect `[y/n]` prompts |
+| **Broadcast status** | Notify others when a task completes | Append to `status.log` |
+
+### Locking to prevent conflicts
+
+```bash
+# Acquire a lock before editing a shared file
+if [ ! -f /tmp/ai_swarm/locks/file_x.lock ]; then
+  echo "$TMUX_PANE" > /tmp/ai_swarm/locks/file_x.lock
+  # perform the task
+  rm /tmp/ai_swarm/locks/file_x.lock
+fi
+```
+
+## Architecture patterns
+
+<AccordionGroup>
+  <Accordion title="Peer-to-peer (P2P)">
+    All agents are equal and monitor each other. Best for simple tasks with no clear dependency order.
+
+    ```
+    AI₁ ←→ AI₂
+     ↕       ↕
+    AI₃ ←→ AI₄
+    ```
+  </Accordion>
+
+  <Accordion title="Master-worker">
+    One master AI dispatches tasks and monitors workers. Best for complex projects that need unified coordination.
+
+    ```
+        AI-Master
+       /    |    \
+    Worker Worker Worker
+    ```
+  </Accordion>
+
+  <Accordion title="Pipeline">
+    Tasks flow sequentially through specialized agents. Best for workflows with clear, ordered stages.
+
+    ```
+    AI₁ (analyze) → AI₂ (design) → AI₃ (implement) → AI₄ (test)
+    ```
+  </Accordion>
+
+  <Accordion title="Hybrid">
+    A master coordinates sub-teams. Best for large projects with multiple parallel workstreams.
+
+    ```
+        AI-Master
+       /    |    \
+    Analysis  Dev   QA
+    team    team  team
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Real-world example: 24/7 auto-rescue
+
+When an agent gets stuck waiting for a confirmation prompt, other agents can detect and unblock it automatically.
+
+```bash
+# Each agent runs this monitoring loop
+while true; do
+  for w in $(tmux list-windows -a -F '#{window_index}'); do
+    output=$(tmux capture-pane -t "0:$w" -p -S -5)
+
+    # Detect and resolve stuck prompts
+    if echo "$output" | grep -q "\[y/n\]"; then
+      tmux send-keys -t "0:$w" "y" Enter
+      echo "Unblocked window $w"
+    fi
+
+    # Flag errors for attention
+    if echo "$output" | grep -qi "error\|failed"; then
+      echo "Window $w has an error — needs review"
+    fi
+  done
+  sleep 30
+done
+```
+
+<Warning>
+  Never auto-confirm destructive operations like `rm -rf` or `DROP TABLE`. Set a command allowlist and keep audit logs of all `send-keys` operations. Periodically review agent activity — do not run fully unattended without safeguards.
+</Warning>
+
+## Quick reference
+
+```
+┌─────────────────────────────────────────────────────┐
+│              AI Swarm command reference              │
+├─────────────────────────────────────────────────────┤
+│ List windows    tmux list-windows -a                 │
+│ Read output     tmux capture-pane -t 0:1 -p -S -100 │
+│ Send command    tmux send-keys -t 0:1 "cmd" Enter    │
+│ Confirm prompt  tmux send-keys -t 0:1 "y" Enter      │
+│ Interrupt       tmux send-keys -t 0:1 C-c            │
+│ New window      tmux new-window -n "name"            │
+└─────────────────────────────────────────────────────┘
+```
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="tmux autopilot skill" icon="terminal" href="/skills/tmux-autopilot">
+    The skill file containing swarm inspection scripts and tmux automation patterns.
+  </Card>
+  <Card title="Canvas whiteboard" icon="chalkboard" href="/methods/canvas-whiteboard">
+    Use a whiteboard to coordinate task structure across swarm agents.
+  </Card>
+  <Card title="Harness Engineering" icon="shield-check" href="/methods/harness-engineering">
+    Add evaluation and closed-loop verification to swarm-generated outputs.
+  </Card>
+  <Card title="Meta-methodology" icon="infinity" href="/methods/meta-methodology">
+    Apply recursive self-optimization to prompt the swarm agents themselves.
+  </Card>
+</CardGroup>

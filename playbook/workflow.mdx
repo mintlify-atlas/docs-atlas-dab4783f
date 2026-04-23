@@ -1,0 +1,176 @@
+---
+title: "The complete Vibe Coding development workflow"
+description: "From idea to working software: the full Vibe Coding pipeline, Memory Bank pattern, four-phase methodology, and step-by-step build process."
+---
+
+Vibe Coding treats development as a planning-first, context-driven pipeline. Rather than diving straight into code, you build a structured foundation of documents that keep the AI oriented throughout the entire project. This page walks you through the complete workflow—from initial idea to polished, incremental delivery—and introduces the four-phase, twelve-principle methodology that makes it repeatable.
+
+## The four phases and twelve principles
+
+The [12Factor.me](https://www.12factor.me/zh) methodology organizes AI-assisted development into four phases. Each phase has concrete principles that prevent the most common failure modes.
+
+<AccordionGroup>
+  <Accordion title="Phase 1: Prepare — establish context and information architecture">
+    **1. Single source of truth** — Centralize all requirements, design decisions, and context in one document hub (Notion, GitHub Wiki, or your `memory-bank/` folder). Never copy-paste fragments into AI chats; always reference the canonical source.
+
+    **2. Prompt first** — Treat prompts as design documents. Write the prompt before you write code. Define inputs, outputs, style, and constraints up front. Teams should share and reuse validated prompt templates.
+
+    **3. Context hygiene** — Start a new session for each new task. Old conversation history pollutes the AI's attention. Summarize the current state in one sentence at the beginning of each session so the AI is oriented.
+  </Accordion>
+
+  <Accordion title="Phase 2: Execute — complete specific tasks efficiently">
+    **4. Human in the loop** — AI generates drafts fast, but only you can make business judgments and assess risk. Validate logic before merging code. Use "Plan Mode" (Claude Code: `Shift+Tab`) to review before execution.
+
+    **5. Chunked work** — Break tasks into units completable in 10–30 minutes. Verify each chunk before moving to the next. Never ask the AI to write 5,000 lines at once.
+
+    **6. Parallel flow** — While the AI is working, do low-context-switch side tasks: documentation updates, small fixes, code review. Avoid high-cognitive-load new work that would break your focus.
+  </Accordion>
+
+  <Accordion title="Phase 3: Collaborate — manage cognitive load and workflow">
+    **7. Cognitive load budget** — Human attention is finite. Set a daily time limit for AI collaboration. Schedule deep review tasks during your peak mental hours.
+
+    **8. Flow protection** — Reserve focused 90-minute blocks and batch your AI interactions within them. Scattered, reactive AI use destroys the flow state that produces your best work.
+
+    **9. Reproducible sessions** — Save the prompt, AI model version, and reason for each significant change. When a bug appears, you can replay the generation process and understand what happened.
+  </Accordion>
+
+  <Accordion title="Phase 4: Iterate — continuously learn and improve">
+    **10. Rest and reflection** — After each sprint, spend five minutes comparing AI output against expectations. Update prompt templates and log "lessons learned."
+
+    **11. Skill parity** — AI amplifies both your strengths and your weaknesses. Keep learning domain knowledge and code review skills. Maintain independent judgment over AI output.
+
+    **12. Culture of curiosity** — When AI gives an answer, ask "why?" before accepting it. Ask "can this be better?" Share discoveries with your team.
+  </Accordion>
+</AccordionGroup>
+
+## The Memory Bank pattern
+
+The Memory Bank is a folder of living documents that serves as the AI's persistent memory across sessions. Because large language models forget context when you start a new chat, the Memory Bank gives the AI everything it needs to resume work accurately.
+
+```
+memory-bank/
+├── game-design-document.md    # or product-requirements.md for non-games
+├── tech-stack.md              # chosen stack with rationale
+├── implementation-plan.md     # step-by-step build instructions
+├── progress.md                # completed steps and notes for future sessions
+└── architecture.md            # what each file does and how they connect
+```
+
+<Note>
+Mark `architecture.md` as an "Always" rule in your Claude Code or Codex configuration so the AI reads it before writing any code. This is the single most effective way to prevent architectural drift.
+</Note>
+
+The key rule for `architecture.md` in your AGENTS.md or custom rules:
+
+```
+# Important:
+# Read memory-bank/architecture.md completely before writing any code.
+# Read memory-bank/game-design-document.md completely before writing any code.
+# After every major feature or milestone, update memory-bank/architecture.md.
+```
+
+## Step-by-step workflow
+
+<Steps>
+  <Step title="Create the design document">
+    Give your project idea to Claude or GPT in one sentence, then ask it to generate a concise design document in Markdown. Save it as `game-design-document.md` (or `product-requirements.md` for apps). Review it yourself and align it with your vision. Keep it simple — you will iterate.
+
+    ```
+    You are a professional AI programming assistant. I want to build [your idea].
+    Generate a concise design document in Markdown that covers:
+    - Core features and scope
+    - User experience goals
+    - Key constraints
+    Keep it focused. I will refine it iteratively.
+    ```
+  </Step>
+
+  <Step title="Choose and document your tech stack">
+    Ask the AI to recommend the simplest, most robust tech stack for your project. Save the recommendation as `tech-stack.md`. Request the minimum viable stack — complexity is the enemy of Vibe Coding.
+
+    Example prompt:
+    ```
+    Given this design document: [paste doc]
+    Recommend the simplest but most robust tech stack.
+    Explain your choices. Output as Markdown.
+    ```
+  </Step>
+
+  <Step title="Generate the implementation plan">
+    Feed both documents to the AI and ask for a detailed, step-by-step implementation plan. Each step must be small and specific, include a test to verify correctness, and contain no code — only clear instructions.
+
+    <Warning>
+    Forbid the AI from writing code in the implementation plan. Code belongs in the coding phase. The plan should be instructions a developer could hand to anyone.
+    </Warning>
+
+    Save the result as `implementation-plan.md`. Focus on the base project first — polish and extra features come after the foundation works.
+  </Step>
+
+  <Step title="Set up the Memory Bank">
+    Create a new project folder and open it in your IDE. Inside the project root, create `memory-bank/` and add all three documents you have created so far. Create two empty files: `progress.md` and `architecture.md`. These will be filled in as you build.
+  </Step>
+
+  <Step title="Clarify the plan before coding">
+    Open Claude Code or Codex CLI. Run this prompt:
+
+    ```
+    Read all documents in /memory-bank. Is the implementation-plan.md
+    completely clear? What questions do you need answered to make it
+    100% unambiguous for you?
+    ```
+
+    Answer all questions, then ask the AI to update `implementation-plan.md` with your answers incorporated.
+  </Step>
+
+  <Step title="Execute one step at a time">
+    Start with Step 1 of your implementation plan:
+
+    ```
+    Read all documents in /memory-bank. Then execute Step 1 of the
+    implementation plan. I will run the tests. Do not start Step 2
+    until I confirm the tests pass.
+    ```
+
+    <Tip>
+    Always use "Plan Mode" (Claude Code: `Shift+Tab`) or "Ask" mode first. Review the proposed changes, then approve execution. Never let the AI run blindly.
+    </Tip>
+
+    After each step passes:
+    - Commit to Git
+    - Start a new session (`/new` or `/clear`)
+    - Update `progress.md` with what was completed
+    - Update `architecture.md` with new file descriptions
+  </Step>
+
+  <Step title="Add features incrementally">
+    Once the base project works, add features one at a time. For each major feature, create a separate `feature-implementation.md` with short steps and tests. Continue the same incremental pattern: one step, verify, commit, new session.
+  </Step>
+</Steps>
+
+## Key workflow rules
+
+<CardGroup cols={2}>
+  <Card title="One step at a time" icon="arrow-right">
+    Never ask the AI to implement more than one step before you verify it works. This is the single most important rule for maintaining control.
+  </Card>
+  <Card title="Verify before continuing" icon="circle-check">
+    Run the specified test for each step yourself. Only move to the next step after you confirm the current one passes.
+  </Card>
+  <Card title="New session per step" icon="refresh">
+    Start a fresh chat after each completed step. Accumulated conversation history degrades the AI's attention and introduces subtle errors.
+  </Card>
+  <Card title="Document as you go" icon="file-text">
+    Update `progress.md` and `architecture.md` after each step. Documentation is context, not an afterthought.
+  </Card>
+</CardGroup>
+
+<Info>
+For non-game projects, replace the Game Design Document with a Product Requirements Document (PRD). The workflow is identical. You can also prototype quickly with tools like v0, Lovable, or Bolt.new, then clone the code to GitHub and continue with this workflow.
+</Info>
+
+## Related pages
+
+- [Debugging AI-generated code effectively](/playbook/debugging) — what to do when a step fails
+- [AI coding tools, models, and resources guide](/playbook/tools-and-resources) — tool and model selection
+- [Prompt engineering](/principles/prompt-engineering) — writing prompts that produce reliable results
+- [Project architecture](/principles/project-architecture) — structuring your codebase for AI collaboration
